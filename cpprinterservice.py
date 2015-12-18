@@ -5,6 +5,7 @@ import Queue
 import socket
 import mmap
 from cpdefs import CpDefs
+from cpdefs import CpAscii
 from cplog import CpLog
 from cpstats import CpInetStats
 from cpprinter import CpPrinter
@@ -126,7 +127,8 @@ class CpPrinterService(threading.Thread):
         self.stateMaxRetries = 3
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
-        
+        self.command_buffer = "" #stores incomplete commands
+         
         self.fmap = {0:self.init_socket,
                      1:self.inet_idle, 
                      2:self.inet_connect, 
@@ -465,7 +467,25 @@ class CpPrinterService(threading.Thread):
         result = self.inet_parse_result(reply)
         
         return result
-    
+
+    def parse_reply(self, message):
+
+        commands = []
+        for line in message.splitlines():
+            print repr(line)
+            if line == CpAscii.BEGIN:
+                print "Begin String"
+                self.command_buffer = ""
+
+            elif line == CpAscii.END:
+                print "End String"
+                commands.append(self.command_buffer)
+                self.command_buffer = ""
+
+            else:
+                self.command_buffer += line
+
+        return commands
  
     def inet_idle(self):
         
@@ -481,13 +501,16 @@ class CpPrinterService(threading.Thread):
             # todo: need to test following if
             # check to see if underlying connection was closed
             if(reply == 0 or reply == ""):
-                print "*** REPLY = 0 ***"
                 self.inet_close()
                 self.enter_state(CpInetState.INITIALIZE,CpInetTimeout.INITIALIZE)
                 return
+
+            # Parse multiple messages
+            commands = self.parse_reply(reply)
             
-            self.printerThread.enqueue_command(reply)
-            #print reply
+            for command in commands:
+                self.printerThread.enqueue_command(command)
+
         except socket.error, e:
             err = e.args[0]
             if err == 'timed out':

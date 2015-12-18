@@ -11,8 +11,8 @@ class CpDefs:
     RunAsService = False
     PrinterQueryStatus = False
     PrinterQueueTimeout = 5
-#     PrinterPort = "/dev/ttyUSB0"
-    PrinterPort = "/dev/tty.usbserial-FTUTL4CN"
+    PrinterPort = "/dev/ttyUSB0"
+    # PrinterPort = "/dev/tty.usbserial-FTUTL4CN"
     PrinterBaud = 9600
     InetHost = "appserver02.cphandheld.com"
     InetPort = 1665
@@ -45,4 +45,6 @@ class CpAscii:
     ETX = "\x03"
     ACK = "\x06"
     NAK = "\x21"
+    BEGIN = "**CPbegin**"
+    END   = "**CPend**"
 
