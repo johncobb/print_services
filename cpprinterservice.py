@@ -472,13 +472,10 @@ class CpPrinterService(threading.Thread):
 
         commands = []
         for line in message.splitlines():
-            print repr(line)
             if line == CpAscii.BEGIN:
-                print "Begin String"
                 self.command_buffer = ""
 
             elif line == CpAscii.END:
-                print "End String"
                 commands.append(self.command_buffer)
                 self.command_buffer = ""
 
@@ -525,7 +522,6 @@ class CpPrinterService(threading.Thread):
             print 'inet_idle: jobs: 0 found.'
             #return result
         
-        print "*** we got here ***"
         time.sleep(1)
         # Check to see if there is a queued message
         if (self.commands.qsize() > 0):
