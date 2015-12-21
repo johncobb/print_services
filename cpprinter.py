@@ -36,7 +36,7 @@ class CpPrinter(threading.Thread):
         self._args = args
         self.__lock = threading.Lock()
         self.closing = False # A flag to indicate thread shutdown
-        self.commands = Queue.Queue(5)
+        self.commands = Queue.Queue(128)
         self.data_buffer = Queue.Queue(128)
         self.printer_timeout = 0
         self.printerResponseCallbackFunc = printerResponseCallbackFunc
