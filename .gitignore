@@ -18,3 +18,4 @@ local.properties
 .classpath
 .settings/
 .loadpath
+errlog.dat

@@ -7,8 +7,8 @@ class CpEncoding:
     CpTcpAscii = 4
 
 class CpDefs:
-    PrinterId = "4321"
-    RunAsService = False
+    PrinterId = "1234"
+    RunAsService = True
     PrinterQueryStatus = False
     PrinterQueueTimeout = 5
     PrinterPort = "/dev/ttyUSB0"
