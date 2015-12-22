@@ -512,7 +512,7 @@ class CpPrinterService(threading.Thread):
 
             for command in printer_commands:
                 self.printerThread.enqueue_command(command)
-                self.ack_queue.enqueue(TOKEN_TCPACK)
+                self.ack_queue.enqueue(CpInetResponses.TOKEN_TCPACK)
 
         except socket.error, e:
             err = e.args[0]
@@ -540,7 +540,7 @@ class CpPrinterService(threading.Thread):
 
     def inet_heartbeat(self):
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
-        if elapsed_heartbeat > INET_HEARTBEAT_TIME:
+        if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
             self.last_heartbeat_time = time.time()
             self.sock.send("heartbeat")
 
