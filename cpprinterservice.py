@@ -546,7 +546,6 @@ class CpPrinterService(threading.Thread):
                 print "heartbeat failed"
                 print e.args[0]
 
-            catch
             if(CpDefs.LogVerboseInet):
                 print "heartbeat sent"
 
