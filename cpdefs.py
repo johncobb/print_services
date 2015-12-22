@@ -8,7 +8,7 @@ class CpEncoding:
 
 class CpDefs:
     PrinterId = "1234"
-    RunAsService = True
+    RunAsService = False
     PrinterQueryStatus = False
     PrinterQueueTimeout = 5
     PrinterPort = "/dev/ttyUSB0"
