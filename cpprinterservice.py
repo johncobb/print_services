@@ -38,8 +38,8 @@ class CpInetResponses:
     TOKEN_HTTPNORESPONSE = "HTTP/1.1 204"
     TOKEN_HTTPERROR = "ERROR"
     TOKEN_HTTPCONNECT = "CONNECT"
-    TOKEN_TCPACK = "ACK"
-    TOKEN_TCPNAK = "NAK"
+    TOKEN_TCPACK = "ACK\r"
+    TOKEN_TCPNAK = "NAK\r"
     
       
 class CpInetDefs:
