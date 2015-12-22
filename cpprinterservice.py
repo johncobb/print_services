@@ -249,7 +249,7 @@ class CpPrinterService(threading.Thread):
         try:
             self.remoteIp = socket.gethostbyname(self.host)
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            
+           ocket.SOL_SOCKE
             if(CpDefs.LogVerboseInet):
                 print 'init_socket: successful (%s)' %self.remoteIp
                 
@@ -514,6 +514,8 @@ class CpPrinterService(threading.Thread):
                 self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
 
         except socket.error, e:
+            for error in e:
+                print "error: ", error
             err = e.args[0]
             if err == 'timed out':
                 result.ResultCode = CpInetResultCode.RESULT_SCKTIMEOUT
@@ -542,6 +544,7 @@ class CpPrinterService(threading.Thread):
             self.last_heartbeat_time = time.time()
             try:
                 self.sock.send(CpDefs.InetTcpParms % "hb")
+                print "send heartbeat"
             except socket.error, e:
                 print "heartbeat failed"
                 print e.args[0]
