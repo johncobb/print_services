@@ -487,7 +487,8 @@ class CpPrinterService(threading.Thread):
 
         while self.ack_queue.qsize() > 0:
             print "Sent ACK"
-            self.sock.send(self.ack_queue.get())
+            self.sock.send(self.ack_queue.get() % (CpDefs.PrinterId))
+
             self.ack_queue.task_done()
         
         result = CpInetResultCode()
