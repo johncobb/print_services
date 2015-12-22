@@ -482,10 +482,10 @@ class CpPrinterService(threading.Thread):
  
     def inet_idle(self):
 
-        while ack_queue.qsize() > 0:
+        while self.ack_queue.qsize() > 0:
             print "Send ACK"
-            self.sock.send(ack_queue.get())
-            ack_queue.task_done()
+            self.sock.send(self.ack_queue.get())
+            self.ack_queue.task_done()
         
         result = CpInetResultCode()
         
