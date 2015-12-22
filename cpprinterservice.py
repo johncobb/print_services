@@ -510,7 +510,7 @@ class CpPrinterService(threading.Thread):
 
             for command in printer_commands:
                 self.printerThread.enqueue_command(command)
-                self.ack_queue.enqueue(CpInetResponses.TOKEN_TCPACK)
+                self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
 
         except socket.error, e:
             err = e.args[0]
