@@ -83,6 +83,8 @@ class CpPrinter(threading.Thread):
         #self.__lock.acquire()
         #self.ser.write(cmd + '\r')
         self.ser.write(cmd)
+        print "blah"
+        print "Getting Response: ", self.process_response()
         #self.__lock.release()
         
     '''
@@ -123,7 +125,7 @@ class CpPrinter(threading.Thread):
     def process_response(self):
         
         time.sleep(.5)
-        tmp_buffer = ""
+        temp_buffer = ""
         self.local_buffer = ""
         
        
@@ -133,20 +135,22 @@ class CpPrinter(threading.Thread):
             if(self.closing):
                 break
             
-            tmp_char = self.ser.read(1)
+            temp_char = self.ser.read(1)
             
             # check for start of text
-            if(tmp_char == CpAscii.STX):
-                tmp_buffer = ""
+            if(temp_char == CpAscii.STX):
+                temp_buffer = ""
                 continue
             
             # check for end of text
-            if(tmp_char == CpAscii.ETX):
+            if(temp_char == CpAscii.ETX):
                 # append to local buffer because we can
                 # receive multiple stx and etx per read
-                self.local_buffer += tmp_buffer
+                self.local_buffer += temp_buffer
             else:
-                tmp_buffer += tmp_char
+                temp_buffer += temp_char
+
+        return self.local_buffer
                 
         # parse the local_local buffer to determine ack or nak
         # example result:
