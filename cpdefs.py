@@ -14,7 +14,8 @@ class CpDefs:
     PrinterPort = "/dev/ttyUSB0"
     # PrinterPort = "/dev/tty.usbserial-FTUTL4CN"
     PrinterBaud = 9600
-    InetHost = "appserver02.cphandheld.com"
+    # InetHost = "appserver02.cphandheld.com"
+    InetHost = "96.27.198.215"
     InetPort = 1665
     InetTcpParms = "%s\r"
     InetTimeout = 5
