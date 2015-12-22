@@ -38,8 +38,8 @@ class CpInetResponses:
     TOKEN_HTTPNORESPONSE = "HTTP/1.1 204"
     TOKEN_HTTPERROR = "ERROR"
     TOKEN_HTTPCONNECT = "CONNECT"
-    TOKEN_TCPACK = "ACK\r"
-    TOKEN_TCPNAK = "NAK\r"
+    TOKEN_TCPACK = "ACK"
+    TOKEN_TCPNAK = "NAK"
     
       
 class CpInetDefs:
@@ -540,7 +540,7 @@ class CpPrinterService(threading.Thread):
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
         if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
             self.last_heartbeat_time = time.time()
-            self.sock.send("heartbeat")
+            self.sock.send("hb" % InetTcpParms)
             if(CpDefs.LogVerboseInet):
                 print "heartbeat sent"
 
