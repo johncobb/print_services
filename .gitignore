@@ -20,3 +20,5 @@ local.properties
 .settings/
 .loadpath
 errlog.dat
+ctags
+tags
