@@ -291,7 +291,7 @@ def main(argv):
         elif user_input == 'headdiagnostic':
             printerThread.enqueue_command(CpZplDefs.ZplQueryHeadDiagnostic)         
         elif user_input == 'aztec':
-            # printerThread.enqueue_command("^XA^BY8,0^FT124,209^BON,8,N,0,N,1,^FDYourTextHere^FS^XZ\r")
+            printerThread.enqueue_command("^XA^BY8,0^FT124,209^BON,8,N,0,N,1,^FDYourTextHere^FS^XZ\r")
         elif user_input == 'test':
             in_file = file("PrestigeLabel.zpl", 'r')
             printerThread.enqueue_command(in_file.read())
