@@ -501,7 +501,6 @@ class CpPrinterService(threading.Thread):
 
             # todo: need to test following if
             # check to see if underlying connection was closed
-            print "reply: ", reply
             if(reply == 0 or reply == ""):
                 self.inet_close()
                 self.enter_state(CpInetState.INITIALIZE,CpInetTimeout.INITIALIZE)
@@ -516,6 +515,7 @@ class CpPrinterService(threading.Thread):
 
         except socket.error, e:
             err = e.args[0]
+            print err
             if err == 'timed out':
                 result.ResultCode = CpInetResultCode.RESULT_SCKTIMEOUT
                 print 'socket timeout waiting for job'
