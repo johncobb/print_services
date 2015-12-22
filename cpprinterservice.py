@@ -40,6 +40,7 @@ class CpInetResponses:
     TOKEN_HTTPCONNECT = "CONNECT"
     TOKEN_TCPACK = "ACK"
     TOKEN_TCPNAK = "NAK"
+    TOKEN_TCPHBACK = "HBACK"
     
       
 class CpInetDefs:
@@ -477,6 +478,9 @@ class CpPrinterService(threading.Thread):
                 commands.append(self.command_buffer)
                 self.command_buffer = ""
 
+            elif line == CpInetResponses.HBACK:
+                pass
+
             else:
                 self.command_buffer += line
 
@@ -541,12 +545,6 @@ class CpPrinterService(threading.Thread):
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
         if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
             self.last_heartbeat_time = time.time()
-            try:
-                self.sock.send(CpDefs.InetTcpParms % "hb")
-                print "send heartbeat"
-            except socket.error, e:
-                print "heartbeat failed"
-                print e.args[0]
 
             if(CpDefs.LogVerboseInet):
                 print "heartbeat sent"
