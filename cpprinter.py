@@ -272,10 +272,10 @@ def main(argv):
     
     print "running as console...\r\n"
     while True:
-        input = raw_input(">> ")
+        user_input = raw_input(">> ")
                 # Python 3 users
                 # input = input(">> ")
-        if input == 'exit' or input == 'EXIT':
+        if user_input == 'exit' or user_input == 'EXIT':
                 
             printerThread.shutdown_thread()
             
@@ -284,20 +284,21 @@ def main(argv):
                 
             print "Exiting app"
             break
-        elif input == 'hoststatus':
+        elif user_input == 'hoststatus':
             printerThread.enqueue_command(CpZplDefs.ZplHostQueryStatus)
-        elif input == 'printerstatus':
+        elif user_input == 'printerstatus':
             printerThread.enqueue_command(CpZplDefs.ZplPrinterQueryStatus)
-        elif input == 'headdiagnostic':
+        elif user_input == 'headdiagnostic':
             printerThread.enqueue_command(CpZplDefs.ZplQueryHeadDiagnostic)         
-        elif input == 'aztec':
+        elif user_input == 'aztec':
             # printerThread.enqueue_command("^XA^BY8,0^FT124,209^BON,8,N,0,N,1,^FDYourTextHere^FS^XZ\r")
-            in_file = file("zpl.zpl", 'r')
+        elif user_input == 'test':
+            in_file = file("PrestigeLabel.zpl", 'r')
             printerThread.enqueue_command(in_file.read())
             in_file.close()
-        elif input == 'matrix':
+        elif user_input == 'matrix':
             printerThread.enqueue_command("^XA^FO50,100^BXN,10,200^FDYourTextHere^FS^XZ\r")      
-        elif input == 'qr':
+        elif user_input == 'qr':
             printerThread.enqueue_command("^XA^FO100,100^BQN,2,10^FDYourTextHere^FS^XZ\r")        
         else:
             pass
@@ -307,8 +308,3 @@ def main(argv):
 if __name__ == '__main__':
     
     main(sys.argv[1:])
-    
-    
-
-
-
