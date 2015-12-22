@@ -537,7 +537,7 @@ class CpPrinterService(threading.Thread):
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
         if elapsed_heartbeat > 10:
             self.last_heartbeat_time = time.time()
-            print "Printer ", CpDefs.printerId
+            print "Printer ", CpDefs.PrinterId
 
         self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
             
