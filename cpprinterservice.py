@@ -515,7 +515,6 @@ class CpPrinterService(threading.Thread):
 
         except socket.error, e:
             err = e.args[0]
-            print err
             if err == 'timed out':
                 result.ResultCode = CpInetResultCode.RESULT_SCKTIMEOUT
                 print 'socket timeout waiting for job'
@@ -541,7 +540,13 @@ class CpPrinterService(threading.Thread):
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
         if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
             self.last_heartbeat_time = time.time()
-            self.sock.send(CpDefs.InetTcpParms % "hb")
+            try:
+                self.sock.send(CpDefs.InetTcpParms % "hb")
+            except socket.error, e:
+                print "heartbeat failed"
+                print e.args[0]
+
+            catch
             if(CpDefs.LogVerboseInet):
                 print "heartbeat sent"
 
