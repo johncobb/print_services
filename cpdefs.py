@@ -18,7 +18,7 @@ class CpDefs:
     InetHost = "96.27.198.215"
     InetPort = 1665
     InetTcpParms = "%s\r"
-    InetTimeout = 5
+    InetTimeout = 30
     WatchdogFilePath = "/home/cphappliance/cph/echobase_intel_nuc/watchdog/info.txt"
     WatchdogWaitNetworkInterface = False
     Encoding = CpEncoding.CpTcpAscii

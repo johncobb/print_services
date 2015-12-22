@@ -38,9 +38,8 @@ class CpInetResponses:
     TOKEN_HTTPNORESPONSE = "HTTP/1.1 204"
     TOKEN_HTTPERROR = "ERROR"
     TOKEN_HTTPCONNECT = "CONNECT"
-    TOKEN_TCPACK = "ACK"
-    TOKEN_TCPNAK = "NAK"
-    TOKEN_TCPHBACK = "HBACK"
+    TOKEN_TCPACK = "ACK\r"
+    TOKEN_TCPNAK = "NAK\r"
     
       
 class CpInetDefs:
@@ -133,6 +132,7 @@ class CpPrinterService(threading.Thread):
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
         self.command_buffer = "" #stores incomplete commands
+        self.last_heartbeat_time = time.time()
         self.last_heartbeat_time = time.time()
         self.elapsed_heartbeat_time = 0
         self.ack_queue = Queue.Queue(128)
@@ -522,7 +522,8 @@ class CpPrinterService(threading.Thread):
             err = e.args[0]
             if err == 'timed out':
                 result.ResultCode = CpInetResultCode.RESULT_SCKTIMEOUT
-                print 'socket timeout waiting for job'
+                self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE)
+                return
             else:
                 result.ResultCode = CpInetResultCode.RESULT_SCKRECVERROR   
 
@@ -760,13 +761,6 @@ if __name__ == '__main__':
                 time.sleep(.005)
                 
             printThread.shutdown_thread()
-            
-            while(printThread.isAlive()):
-                time.sleep(.005)
-                
-            print "Exiting app"
-            break
-        elif input == '0':
             inetThread.enqueue_packet(CpDefs.PrinterId)
         elif input == '1':
             printThread.enqueue_command("hello world\r")
