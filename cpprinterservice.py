@@ -487,7 +487,6 @@ class CpPrinterService(threading.Thread):
 
         while self.ack_queue.qsize() > 0:
             print "Sent ACK"
-            # self.sock.send(self.ack_queue.get() % (CpDefs.PrinterId))
             self.sock.send(CpDefs.InetTcpParms % self.ack_queue.get())
 
             self.ack_queue.task_done()
@@ -502,6 +501,7 @@ class CpPrinterService(threading.Thread):
 
             # todo: need to test following if
             # check to see if underlying connection was closed
+            print "reply: ", reply
             if(reply == 0 or reply == ""):
                 self.inet_close()
                 self.enter_state(CpInetState.INITIALIZE,CpInetTimeout.INITIALIZE)
