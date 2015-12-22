@@ -515,8 +515,6 @@ class CpPrinterService(threading.Thread):
             self.log.logError('printer_idle jobs: 0')
             print 'inet_idle: jobs: 0 found.'
         
-        time.sleep(1)
-
         # Check to see if there is a queued message
         print "self.commands.qsize() = ", self.commands.qsize()
         if (self.commands.qsize() > 0):
