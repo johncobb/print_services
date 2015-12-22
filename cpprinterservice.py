@@ -491,6 +491,7 @@ class CpPrinterService(threading.Thread):
             # todo: need to test following if
             # check to see if underlying connection was closed
             if(reply == 0 or reply == ""):
+                print "reply == 0 or reply == \"\""
                 self.inet_close()
                 self.enter_state(CpInetState.INITIALIZE,CpInetTimeout.INITIALIZE)
                 return
@@ -513,7 +514,6 @@ class CpPrinterService(threading.Thread):
                  
             self.log.logError('printer_idle jobs: 0')
             print 'inet_idle: jobs: 0 found.'
-            #return result
         
         time.sleep(1)
 
