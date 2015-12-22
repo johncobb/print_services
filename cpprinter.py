@@ -83,7 +83,7 @@ class CpPrinter(threading.Thread):
         #self.__lock.acquire()
         #self.ser.write(cmd + '\r')
         self.ser.write(cmd)
-        for respone in self.process_response():
+        for response in self.process_response():
             print "Response: ", response
         #self.__lock.release()
         
