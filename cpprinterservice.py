@@ -526,7 +526,7 @@ class CpPrinterService(threading.Thread):
             return
 
         print "Switch to heartbeat state"
-        self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
+        self.enter_state(CpInetState.HEARTBEAT, CpInetTimeout.HEARTBEAT)
 
 #self.last_heartbeat_time
 #self.elapsed_heartbeat_time
