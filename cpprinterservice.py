@@ -19,6 +19,7 @@ class CpInetState:
     SEND = 5
     WAITNETWORKINTERFACE = 6
     HEARTBEAT = 7
+    RECEIVE = 8
                       
 class CpInetResultCode:
     RESULT_UNKNOWN = 0
@@ -46,6 +47,7 @@ class CpInetDefs:
     INET_PORT = CpDefs.InetPort
     INET_TCPPARAMS = CpDefs.InetTcpParms
     INET_TIMEOUT = CpDefs.InetTimeout
+    INET_HEARTBEAT_TIME = 20
     
 class CpInetTimeout:
     INITIALIZE = 5
@@ -56,6 +58,7 @@ class CpInetTimeout:
     SEND = 5
     WAITNETWORKINTERFACE = 120
     HEARTBEAT = 1
+    RECEIVE = 10
     
 class CpInetError:
     InitializeErrors = 0
@@ -141,10 +144,10 @@ class CpPrinterService(threading.Thread):
                      4:self.inet_sleep,
                      5:self.inet_send,
                      6:self.inet_waitnetworkinterface,
-                     7:self.inet_heartbeat}
+                     7:self.inet_heartbeat,
+                     8:self.inet_receive}
         
         self.printerThread = printerThread
-        
         
         threading.Thread.__init__(self)
     
@@ -177,6 +180,8 @@ class CpPrinterService(threading.Thread):
             return "WAITNETWORKINTERFACE" 
         elif(index == 7):
             return "HEARTBEAT"
+        elif(index == 8):
+            return "RECEIVE"
                
 
     def enter_state(self, new_state, timeout):
@@ -507,7 +512,7 @@ class CpPrinterService(threading.Thread):
 
             for command in printer_commands:
                 self.printerThread.enqueue_command(command)
-                self.ack_queue.enqueue("ACK")
+                self.ack_queue.enqueue(TOKEN_TCPACK)
 
         except socket.error, e:
             err = e.args[0]
@@ -517,7 +522,7 @@ class CpPrinterService(threading.Thread):
             else:
                 result.ResultCode = CpInetResultCode.RESULT_SCKRECVERROR   
 
-            result.Data = e.args[0]    
+            result.Data = e.args[0]
                  
             self.log.logError('printer_idle jobs: 0')
             print 'inet_idle: jobs: 0 found.'
@@ -535,12 +540,14 @@ class CpPrinterService(threading.Thread):
 
     def inet_heartbeat(self):
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
-        if elapsed_heartbeat > 20:
+        if elapsed_heartbeat > INET_HEARTBEAT_TIME:
             self.last_heartbeat_time = time.time()
             self.sock.send("heartbeat")
-            print "heartbeat"
 
         self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
+
+    def inet_receive(self):
+        pass
             
     def inet_sleep(self):
         # Check to see if there is a queued message
