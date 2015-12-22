@@ -518,6 +518,7 @@ class CpPrinterService(threading.Thread):
         time.sleep(1)
 
         # Check to see if there is a queued message
+        print "self.commands.qsize() = ", self.commands.qsize()
         if (self.commands.qsize() > 0):
             
             if(CpDefs.LogVerboseInet):
@@ -526,11 +527,13 @@ class CpPrinterService(threading.Thread):
             self.enter_state(CpInetState.SEND,CpInetTimeout.SEND)
             return
 
+        print "Switch to heartbeat state"
         self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
 
 #self.last_heartbeat_time
 #self.elapsed_heartbeat_time
     def inet_heartbeat(self):
+        print "inet_heartbeat"
 
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
         if elapsed_heartbeat > 10:
