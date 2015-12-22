@@ -207,8 +207,6 @@ class CpPrinterService(threading.Thread):
         self.timestamp = datetime.now()
         
     def inet_handler(self):
-        
-
         if (CpDefs.WatchdogWaitNetworkInterface):
             # Start out waiting for network interface
             self.enter_state(CpInetState.WAITNETWORKINTERFACE, CpInetTimeout.WAITNETWORKINTERFACE)
@@ -491,7 +489,6 @@ class CpPrinterService(threading.Thread):
         # Process the response
         try:
             print 'inet_idle: socket wait receive'
-            
             
             reply = self.sock.recv(4096)
 
