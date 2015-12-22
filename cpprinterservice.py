@@ -524,6 +524,7 @@ class CpPrinterService(threading.Thread):
             return
 
     def inet_heartbeat(self):
+        print "inet_heartbeat"
         pass
             
     def inet_sleep(self):
