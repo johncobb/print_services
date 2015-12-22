@@ -55,6 +55,7 @@ class CpInetTimeout:
     SLEEP = 30
     SEND = 5
     WAITNETWORKINTERFACE = 120
+    HEARTBEAT = 1
     
 class CpInetError:
     InitializeErrors = 0
