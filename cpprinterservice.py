@@ -540,6 +540,8 @@ class CpPrinterService(threading.Thread):
         if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
             self.last_heartbeat_time = time.time()
             self.sock.send("heartbeat")
+            if(CpDefs.LogVerboseInet):
+                print "heartbeat sent"
 
         self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
 

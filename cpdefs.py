@@ -16,7 +16,7 @@ class CpDefs:
     PrinterBaud = 9600
     # InetHost = "appserver02.cphandheld.com"
     InetHost = "96.27.198.215"
-    InetPort = 65
+    InetPort = 1665
     InetTcpParms = "%s\r"
     InetTimeout = 5
     WatchdogFilePath = "/home/cphappliance/cph/echobase_intel_nuc/watchdog/info.txt"
