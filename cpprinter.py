@@ -85,6 +85,7 @@ class CpPrinter(threading.Thread):
         print "Wrote: ", self.ser.write(cmd)
         print "Printing Responses:"
         self.ser.write("~HQES")
+        self.ser.write("~HQMI")
         for response in self.process_response():
             print "Response: ", response
         #self.__lock.release()
