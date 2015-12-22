@@ -507,7 +507,7 @@ class CpPrinterService(threading.Thread):
 
             for command in printer_commands:
                 self.printerThread.enqueue_command(command)
-                self.ack_queue.("ACK")
+                self.ack_queue.enqueue("ACK")
 
         except socket.error, e:
             err = e.args[0]
