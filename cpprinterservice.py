@@ -128,7 +128,6 @@ class CpPrinterService(threading.Thread):
         self.state_cb = None
         self.retries = 1
         self.waitRetryBackoff = {1:5, 2:15, 3:30}
-        #self.waitRetryBackoff = {1:1, 2:2, 3:3} # Test timeouts to speed up testing
         self.stateMaxRetries = 3
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
