@@ -249,7 +249,6 @@ class CpPrinterService(threading.Thread):
         try:
             self.remoteIp = socket.gethostbyname(self.host)
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-           ocket.SOL_SOCKE
             if(CpDefs.LogVerboseInet):
                 print 'init_socket: successful (%s)' %self.remoteIp
                 
