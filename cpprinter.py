@@ -47,7 +47,7 @@ class CpPrinter(threading.Thread):
         # Once found ignore that message and continue processing
         # onto the next 0x00 found. This is our first full message
         self.ser = serial.Serial(CpDefs.PrinterPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
-        self.local_buffer = ""
+        self.local_buffer = []
         threading.Thread.__init__(self)
         
     def get_queue_depth(self):
@@ -82,10 +82,9 @@ class CpPrinter(threading.Thread):
             print 'sending printer command ', cmd
         #self.__lock.acquire()
         #self.ser.write(cmd + '\r')
-        print "before write"
         self.ser.write(cmd)
-        print "after write"
-        print "Getting Response: ", self.process_response()
+        for respone in self.process_response():
+            print "Response: ", response
         #self.__lock.release()
         
     '''
@@ -127,7 +126,7 @@ class CpPrinter(threading.Thread):
         
         time.sleep(.5)
         temp_buffer = ""
-        self.local_buffer = ""
+        self.local_buffer = []
         
        
         #While we have serial data process the buffer
@@ -147,7 +146,7 @@ class CpPrinter(threading.Thread):
             if(temp_char == CpAscii.ETX):
                 # append to local buffer because we can
                 # receive multiple stx and etx per read
-                self.local_buffer += temp_buffer
+                self.local_buffer.append(temp_buffer)
             else:
                 temp_buffer += temp_char
 
