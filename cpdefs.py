@@ -7,7 +7,7 @@ class CpEncoding:
     CpTcpAscii = 4
 
 class CpDefs:
-    PrinterId = "1234"
+    PrinterId = "9999"
     RunAsService = False
     PrinterQueryStatus = False
     PrinterQueueTimeout = 5
