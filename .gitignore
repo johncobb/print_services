@@ -2,6 +2,7 @@
 ## Eclipse
 #################
 
+PrestigeLabel.zpl
 *.pydevproject
 *.pyc
 .project
