@@ -129,6 +129,8 @@ class CpPrinterService(threading.Thread):
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
         self.command_buffer = "" #stores incomplete commands
+        self.last_heartbeat_time = time.time()
+        self.elapsed_heartbeat_time = 0
          
         self.fmap = {0:self.init_socket,
                      1:self.inet_idle, 
@@ -494,9 +496,9 @@ class CpPrinterService(threading.Thread):
                 return
 
             # Parse multiple messages
-            commands = self.parse_reply(reply)
+            printer_commands = self.parse_reply(reply)
             
-            for command in commands:
+            for command in printer_commands:
                 self.printerThread.enqueue_command(command)
 
         except socket.error, e:
@@ -514,6 +516,7 @@ class CpPrinterService(threading.Thread):
             #return result
         
         time.sleep(1)
+
         # Check to see if there is a queued message
         if (self.commands.qsize() > 0):
             
@@ -523,9 +526,18 @@ class CpPrinterService(threading.Thread):
             self.enter_state(CpInetState.SEND,CpInetTimeout.SEND)
             return
 
+        self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
+
+#self.last_heartbeat_time
+#self.elapsed_heartbeat_time
     def inet_heartbeat(self):
-        print "inet_heartbeat"
-        pass
+
+        elapsed_heartbeat = time.time() - self.last_heartbeat_time
+        if elapsed_heartbeat > 10:
+            self.last_heartbeat_time = time.time()
+            print "Printer ", CpDefs.printerId
+
+        self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
             
     def inet_sleep(self):
         # Check to see if there is a queued message
