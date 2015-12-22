@@ -469,8 +469,7 @@ class CpPrinterService(threading.Thread):
         
         return result
 
-    def parse_reply(self, message):
-
+    def accumulate_commands(self, message):
         commands = []
         for line in message.splitlines():
             if line == CpAscii.BEGIN:
@@ -488,7 +487,7 @@ class CpPrinterService(threading.Thread):
     def inet_idle(self):
 
         while self.ack_queue.qsize() > 0:
-            print "Send ACK"
+            print "Sent ACK"
             self.sock.send(self.ack_queue.get())
             self.ack_queue.task_done()
         
@@ -508,7 +507,7 @@ class CpPrinterService(threading.Thread):
                 return
 
             # Parse multiple messages
-            printer_commands = self.parse_reply(reply)
+            printer_commands = self.accumulate_commands(reply)
 
             for command in printer_commands:
                 self.printerThread.enqueue_command(command)
@@ -529,7 +528,6 @@ class CpPrinterService(threading.Thread):
         
         # Check to see if there is a queued message
         if (self.commands.qsize() > 0):
-            
             if(CpDefs.LogVerboseInet):
                 print 'inet_idle record found'
                 
