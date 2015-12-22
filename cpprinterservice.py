@@ -18,6 +18,7 @@ class CpInetState:
     SLEEP = 4
     SEND = 5
     WAITNETWORKINTERFACE = 6
+    HEARTBEAT = 7
                       
 class CpInetResultCode:
     RESULT_UNKNOWN = 0
@@ -135,7 +136,8 @@ class CpPrinterService(threading.Thread):
                      3:self.inet_close, 
                      4:self.inet_sleep,
                      5:self.inet_send,
-                     6:self.inet_waitnetworkinterface}
+                     6:self.inet_waitnetworkinterface,
+                     7:self.inet_heartbeat}
         
         self.printerThread = printerThread
         
@@ -169,6 +171,8 @@ class CpPrinterService(threading.Thread):
             return "SEND"
         elif(index == 6):
             return "WAITNETWORKINTERFACE" 
+        elif(index == 7):
+            return "HEARTBEAT"
                
 
     def enter_state(self, new_state, timeout):
@@ -207,8 +211,6 @@ class CpPrinterService(threading.Thread):
         self.timestamp = datetime.now()
         
     def inet_handler(self):
-        
-
         if (CpDefs.WatchdogWaitNetworkInterface):
             # Start out waiting for network interface
             self.enter_state(CpInetState.WAITNETWORKINTERFACE, CpInetTimeout.WAITNETWORKINTERFACE)
@@ -357,19 +359,14 @@ class CpPrinterService(threading.Thread):
                 
             packet = self.commands.get(True)
             
-            
-            #if(self.inet_send_packet(packet) == True):
             result = self.inet_send_packet(packet)
-            #result = self.inet_send_packet_tcp_ascii(packet)
-            
-            #if(result.ResultCode == CpInetResultCode.RESULT_OK):
+
             if(result.ResultCode == CpInetResultCode.RESULT_TCPACK or result.ResultCode == CpInetResultCode.RESULT_TCPNAK):
                 print 'we received an ack'
                 if(result.ResultCode == CpInetResultCode.RESULT_TCPNAK):
                     self.inet_stats.Naks += 1
                     if(CpDefs.LogVerboseInet):
                         print 'NAK: ', result.Data
-                        #print 'NAK received discarding message'
                     
                 # Updated Statistics
                 self.inet_stats.Sent += 1
@@ -383,8 +380,6 @@ class CpPrinterService(threading.Thread):
                 print 'inet_send error: %s' % result.Data
                 self.enqueue_packet(packet)
                 self.handle_inet_send_error()
-                #print 'tasks in queue %d' % self.commands.qsize()
-                #print 'error: ResultCode=(%d) Data=%s ' % (result.ResultCode, result.Data)
                 
             return True
         else:
@@ -421,8 +416,6 @@ class CpPrinterService(threading.Thread):
             
     # inet_send_packet is explicitly called by inet_send 
     def inet_send_packet(self, packet):
-
-        
         #tcpPacket = "178\r"
         
         tcpPacket = CpInetDefs.INET_TCPPARAMS % (CpDefs.PrinterId)
@@ -463,7 +456,6 @@ class CpPrinterService(threading.Thread):
             print 'inet_send: failed'
             return result
                  
-
         result = self.inet_parse_result(reply)
         
         return result
@@ -491,7 +483,6 @@ class CpPrinterService(threading.Thread):
         # Process the response
         try:
             print 'inet_idle: socket wait receive'
-            
             
             reply = self.sock.recv(4096)
 
@@ -531,11 +522,9 @@ class CpPrinterService(threading.Thread):
                 
             self.enter_state(CpInetState.SEND,CpInetTimeout.SEND)
             return
-            
-        # Check for idle timeout then close connection
-#         if(self.state_timedout() == True):
-#             self.inet_close()
-#             self.enter_state(CpInetState.SLEEP, CpInetTimeout.SLEEP)
+
+    def inet_heartbeat(self):
+        pass
             
     def inet_sleep(self):
         # Check to see if there is a queued message
