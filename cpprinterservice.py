@@ -49,6 +49,7 @@ class CpInetDefs:
     INET_TCPPARAMS = CpDefs.InetTcpParms
     INET_TIMEOUT = CpDefs.InetTimeout
     INET_HEARTBEAT_TIME = 20
+    INET_HEARTBEAT = "HB"
     
 class CpInetTimeout:
     INITIALIZE = 5
@@ -548,7 +549,7 @@ class CpPrinterService(threading.Thread):
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
         if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
             self.last_heartbeat_time = time.time()
-
+            self.sock.send(CpInetDefs.INET_HEARTBEAT)
             if(CpDefs.LogVerboseInet):
                 print "heartbeat sent"
 
