@@ -513,11 +513,11 @@ class CpPrinterService(threading.Thread):
             self.sock.send(self.heartbeat_queue.get())
             self.heartbeat_queue.task_done()
             self.ack_received = False
-            self.last_heartbeat_sent_time = time.time()
+            self.last_heartbeat_time = time.time()
 
         #If the ack timeout is reached the thread should be recreated
         #This usually signifies a lost internet connection
-        heartbeat_elapsed = time.time() - self.last_heartbeat_sent_time
+        heartbeat_elapsed = time.time() - self.last_heartbeat_time
 
         if not self.ack_received and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
             if CpDefs.LogVerboseInet:
@@ -574,10 +574,11 @@ class CpPrinterService(threading.Thread):
             return
 
     def try_heartbeat(self):
-        elapsed_heartbeat = time.time() - self.last_heartbeat_time
-        if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
-            self.last_heartbeat_time = time.time()
-            self.heartbeat_queue.put(CpDefs.InetTcpParms % CpInetDefs.INET_HEARTBEAT)
+        self.heartbeat_queue.put(CpDefs.InetTcpParms % CpInetDefs.INET_HEARTBEAT)
+        # elapsed_heartbeat = time.time() - self.last_heartbeat_time
+        # if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
+            # self.last_heartbeat_time = time.time()
+            # self.heartbeat_queue.put(CpDefs.InetTcpParms % CpInetDefs.INET_HEARTBEAT)
             # self.sock.send(CpInetDefs.INET_HEARTBEAT)
             # if(CpDefs.LogVerboseInet):
                 # print "heartbeat sent"
