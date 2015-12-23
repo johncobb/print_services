@@ -13,7 +13,7 @@ tmp/
 target/
 *.tmp
 *.bak
-*.swp
+*.sw*
 *~.nib
 local.properties
 .classpath
