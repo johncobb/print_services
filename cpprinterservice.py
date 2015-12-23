@@ -478,7 +478,7 @@ class CpPrinterService(threading.Thread):
                 commands.append(self.command_buffer)
                 self.command_buffer = ""
 
-            elif line == CpInetResponses.HBACK:
+            elif line == CpInetResponses.TOKEN_TCPHBACK:
                 pass
 
             else:
