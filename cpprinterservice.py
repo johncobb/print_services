@@ -324,6 +324,8 @@ class CpPrinterService(threading.Thread):
 
             self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
             self.watchdog_set_status(CpWatchdogStatus.Success)
+
+            self.heartbeat_ack = True #Don't expect heartbeat ack until heartbeat sent
             return True
         except:
             self.log.logError('inet_connect: failed')
