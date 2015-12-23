@@ -50,7 +50,8 @@ class CpInetDefs:
     INET_TIMEOUT = CpDefs.InetTimeout
     INET_HEARTBEAT_TIME = 20
     INET_HEARTBEAT = "HB"
-    
+    INET_HEARTBEAT_ACK_TIME = 10
+
 class CpInetTimeout:
     INITIALIZE = 5
     IDLE = 30
@@ -137,8 +138,9 @@ class CpPrinterService(threading.Thread):
 
         self.last_heartbeat_time = time.time()
         self.elapsed_heartbeat_time = 0
-        self.heartbeat_queue = Queue.Queue(32)
-        self.heartbeat_thread = threading.Timer()
+        self.heartbeat_queue = Queue.Queue(8)
+        self.heartbeat_thread = threading.Timer(CpInetDefs.INET_HEARTBEAT_TIME,
+                                                try_heartbeat)
 
         self.ack_queue = Queue.Queue(128)
          
@@ -267,6 +269,8 @@ class CpPrinterService(threading.Thread):
             self.heartbeat_thread.stop()
             self.heartbeat_thread = threading.Timer(CpInetDefs.INET_HEARTBEAT_TIME,
                                                     try_heartbeat).start()
+            #Any existing heartbeats are trashed
+            self.heartbeat_queue = Queue.Queue(8)
             return True
         except socket.gaierror:
             self.log.logError('init_socket: failed (hostname could not be resolved)')
@@ -491,7 +495,7 @@ class CpPrinterService(threading.Thread):
                 self.command_buffer = ""
 
             elif line == CpInetResponses.TOKEN_TCPHBACK:
-                pass
+                self.ack_received = true
 
             else:
                 self.command_buffer += line
@@ -511,7 +515,19 @@ class CpPrinterService(threading.Thread):
             print "Sending heartbeat"
             self.sock.send(self.heartbeat_queue.get())
             self.heartbeat_queue.task_done()
-        
+            self.ack_received = False
+            self.last_heartbeat_sent_time = time.time()
+
+        #If the ack timeout is reached the thread should be recreated
+        #This usually signifies a lost internet connection
+        heartbeat_elapsed = time.time() - self.last_heartbeat_sent_time
+
+        if not self.ack_received and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
+            if CpDefs.LogVerboseInet:
+                print "Heartbeat ack not received"
+            self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE);
+            return
+
         result = CpInetResultCode()
         
         # Process the response
@@ -559,8 +575,6 @@ class CpPrinterService(threading.Thread):
                 
             self.enter_state(CpInetState.SEND,CpInetTimeout.SEND)
             return
-
-        # self.enter_state(CpInetState.HEARTBEAT, CpInetTimeout.HEARTBEAT)
 
     def try_heartbeat(self):
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
