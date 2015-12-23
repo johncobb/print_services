@@ -511,6 +511,7 @@ class CpPrinterService(threading.Thread):
             if CpDefs.LogVerboseInet:
                 print "Heartbeat ack not received"
             self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE);
+            time.sleep(10)
             return
 
         result = CpInetResultCode()
