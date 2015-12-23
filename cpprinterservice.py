@@ -273,7 +273,9 @@ class CpPrinterService(threading.Thread):
         except socket.gaierror:
             self.log.logError('init_socket: failed (hostname could not be resolved)')
             print 'init_socket: failed (hostname could not be resolved)'
-        except:      
+        except socket.error, e:      
+            for error in e:
+                print "error: ", e
             self.log.logError('init_socket: failed (other)')
             print 'init_socket: failed (other)'
         
