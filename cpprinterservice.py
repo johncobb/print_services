@@ -137,8 +137,7 @@ class CpPrinterService(threading.Thread):
         self.command_buffer = "" #stores incomplete commands
 
         self.heartbeat_ack = False
-        self.last_heartbeat_time = time.time()
-        self.elapsed_heartbeat_time = 0
+        self.last_heartbeat_time = -40 # Always sends initial heartbeat
 
         self.ack_queue = Queue.Queue(128)
 
