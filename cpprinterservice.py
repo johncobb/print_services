@@ -134,6 +134,7 @@ class CpPrinterService(threading.Thread):
         self.inet_stats.LastSent = time
         self.command_buffer = "" #stores incomplete commands
 
+        self.heartbeat_ack = False
         self.last_heartbeat_time = time.time()
         self.elapsed_heartbeat_time = 0
         self.heartbeat_queue = Queue.Queue(8)
@@ -492,7 +493,7 @@ class CpPrinterService(threading.Thread):
                 self.command_buffer = ""
 
             elif line == CpInetResponses.TOKEN_TCPHBACK:
-                self.ack_received = true
+                self.heartbeat_ack = True
 
             else:
                 self.command_buffer += line
@@ -512,14 +513,14 @@ class CpPrinterService(threading.Thread):
             print "Sending heartbeat"
             self.sock.send(self.heartbeat_queue.get())
             self.heartbeat_queue.task_done()
-            self.ack_received = False
+            self.heartbeat_ack = False
             self.last_heartbeat_time = time.time()
 
         #If the ack timeout is reached the thread should be recreated
         #This usually signifies a lost internet connection
         heartbeat_elapsed = time.time() - self.last_heartbeat_time
 
-        if not self.ack_received and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
+        if not self.heartbeta_ack and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
             if CpDefs.LogVerboseInet:
                 print "Heartbeat ack not received"
             self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE);
