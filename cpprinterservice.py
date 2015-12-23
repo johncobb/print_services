@@ -505,6 +505,9 @@ class CpPrinterService(threading.Thread):
             # todo: need to test following if
             # check to see if underlying connection was closed
             if(reply == 0 or reply == ""):
+                if CpDefs.LogVerposeInet:
+                    print "tcp reply = ", reply
+                    print "Changing state to Init"
                 self.inet_close()
                 self.enter_state(CpInetState.INITIALIZE,CpInetTimeout.INITIALIZE)
                 return
