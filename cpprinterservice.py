@@ -264,6 +264,7 @@ class CpPrinterService(threading.Thread):
             self.enter_state(CpInetState.CONNECT, CpInetTimeout.CONNECT)
 
             #initialize heartbeat thread
+            print "init heartbeat thread"
             self.heartbeat_thread.cancel()
             self.heartbeat_thread = threading.Timer(CpInetDefs.INET_HEARTBEAT_TIME,
                                                     self.try_heartbeat).start()
@@ -535,6 +536,7 @@ class CpPrinterService(threading.Thread):
             print 'inet_idle: socket wait receive'
             
             reply = self.sock.recv(4096)
+            print "reply: ", reply
 
             # todo: need to test following if
             # check to see if underlying connection was closed
