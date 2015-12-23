@@ -134,8 +134,12 @@ class CpPrinterService(threading.Thread):
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
         self.command_buffer = "" #stores incomplete commands
+
         self.last_heartbeat_time = time.time()
         self.elapsed_heartbeat_time = 0
+        self.heartbeat_queue = Queue.Queue(32)
+        self.heartbeat_thread = threading.Timer()
+
         self.ack_queue = Queue.Queue(128)
          
         self.fmap = {0:self.init_socket,
@@ -248,6 +252,8 @@ class CpPrinterService(threading.Thread):
     
 
     def init_socket(self):
+
+
         try:
             self.remoteIp = socket.gethostbyname(self.host)
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -256,6 +262,11 @@ class CpPrinterService(threading.Thread):
                 
             self.initialized = True
             self.enter_state(CpInetState.CONNECT, CpInetTimeout.CONNECT)
+
+            #initialize heartbeat thread
+            self.heartbeat_thread.stop()
+            self.heartbeat_thread = threading.Timer(CpInetDefs.INET_HEARTBEAT_TIME,
+                                                    try_heartbeat).start()
             return True
         except socket.gaierror:
             self.log.logError('init_socket: failed (hostname could not be resolved)')
@@ -489,11 +500,17 @@ class CpPrinterService(threading.Thread):
  
     def inet_idle(self):
 
+        #Process print job acks
         while self.ack_queue.qsize() > 0:
             print "Sent ACK"
             self.sock.send(CpDefs.InetTcpParms % self.ack_queue.get())
-
             self.ack_queue.task_done()
+
+        #Process heartbeats
+        while self.heartbeat_queue.qsize() > 0:
+            print "Sending heartbeat"
+            self.sock.send(self.heartbeat_queue.get())
+            self.heartbeat_queue.task_done()
         
         result = CpInetResultCode()
         
@@ -543,21 +560,30 @@ class CpPrinterService(threading.Thread):
             self.enter_state(CpInetState.SEND,CpInetTimeout.SEND)
             return
 
-        self.enter_state(CpInetState.HEARTBEAT, CpInetTimeout.HEARTBEAT)
+        # self.enter_state(CpInetState.HEARTBEAT, CpInetTimeout.HEARTBEAT)
 
-    def inet_heartbeat(self):
+    def try_heartbeat(self):
         elapsed_heartbeat = time.time() - self.last_heartbeat_time
         if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
             self.last_heartbeat_time = time.time()
-            self.sock.send(CpInetDefs.INET_HEARTBEAT)
-            if(CpDefs.LogVerboseInet):
-                print "heartbeat sent"
+            self.heartbeat_queue.put(CpDefs.InetTcpParms % CpInetDefs.INET_HEARTBEAT)
+            # self.sock.send(CpInetDefs.INET_HEARTBEAT)
+            # if(CpDefs.LogVerboseInet):
+                # print "heartbeat sent"
 
-        self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
+        # self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
 
-    def inet_receive(self):
-        pass
-            
+
+    # def inet_heartbeat(self):
+        # elapsed_heartbeat = time.time() - self.last_heartbeat_time
+        # if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
+            # self.last_heartbeat_time = time.time()
+            # self.sock.send(CpInetDefs.INET_HEARTBEAT)
+            # if(CpDefs.LogVerboseInet):
+                # print "heartbeat sent"
+
+        # self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
+
     def inet_sleep(self):
         # Check to see if there is a queued message
         if (self.commands.qsize() > 0):
