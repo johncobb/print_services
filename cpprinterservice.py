@@ -266,7 +266,7 @@ class CpPrinterService(threading.Thread):
             #initialize heartbeat thread
             self.heartbeat_thread.cancel()
             self.heartbeat_thread = threading.Timer(CpInetDefs.INET_HEARTBEAT_TIME,
-                                                    try_heartbeat).start()
+                                                    self.try_heartbeat).start()
             #Any existing heartbeats are trashed
             self.heartbeat_queue = Queue.Queue(8)
             return True
