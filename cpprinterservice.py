@@ -523,7 +523,7 @@ class CpPrinterService(threading.Thread):
             print 'inet_idle: socket wait receive'
 
             reply = self.sock.recv(4096)
-            print "reply: ", reply
+            # print "reply: ", reply
 
             # todo: need to test following if
             # check to see if underlying connection was closed
