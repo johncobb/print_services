@@ -18,8 +18,7 @@ class CpInetState:
     SLEEP = 4
     SEND = 5
     WAITNETWORKINTERFACE = 6
-    HEARTBEAT = 7
-    RECEIVE = 8
+    RECEIVE = 7
                       
 class CpInetResultCode:
     RESULT_UNKNOWN = 0
@@ -60,7 +59,6 @@ class CpInetTimeout:
     SLEEP = 30
     SEND = 5
     WAITNETWORKINTERFACE = 120
-    HEARTBEAT = 1
     RECEIVE = 10
     
 class CpInetError:
@@ -151,8 +149,7 @@ class CpPrinterService(threading.Thread):
                      4:self.inet_sleep,
                      5:self.inet_send,
                      6:self.inet_waitnetworkinterface,
-                     7:self.inet_heartbeat,
-                     8:self.inet_receive}
+                     7:self.inet_receive}
         
         self.printerThread = printerThread
         
