@@ -562,6 +562,8 @@ class CpPrinterService(threading.Thread):
             self.enter_state(CpInetState.SEND,CpInetTimeout.SEND)
             return
 
+        self.enter_state(CpInetState.HEARTBEAT,CpInetTimeout.HEARTBEAT)
+
     def inet_receive(self):
         pass
 
