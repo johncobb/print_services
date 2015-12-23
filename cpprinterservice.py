@@ -488,6 +488,7 @@ class CpPrinterService(threading.Thread):
                 self.command_buffer = ""
 
             elif line == CpInetResponses.TOKEN_TCPHBACK:
+                print "HEARTBEAT ACK RECEIVED********************"
                 self.heartbeat_ack = True
 
             else:
