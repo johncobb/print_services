@@ -140,7 +140,7 @@ class CpPrinterService(threading.Thread):
         self.elapsed_heartbeat_time = 0
         self.heartbeat_queue = Queue.Queue(8)
         self.heartbeat_thread = threading.Timer(CpInetDefs.INET_HEARTBEAT_TIME,
-                                                try_heartbeat)
+                                                self.try_heartbeat)
 
         self.ack_queue = Queue.Queue(128)
          
