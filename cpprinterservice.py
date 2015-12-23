@@ -502,8 +502,8 @@ class CpPrinterService(threading.Thread):
 
         #Process print job acks
         while self.ack_queue.qsize() > 0:
-            print "Sent ACK"
             self.sock.send(CpDefs.InetTcpParms % self.ack_queue.get())
+            print "Sent ACK"
             self.ack_queue.task_done()
 
         #If the ack timeout is reached the thread should be recreated
@@ -514,7 +514,6 @@ class CpPrinterService(threading.Thread):
             if CpDefs.LogVerboseInet:
                 print "Heartbeat ack not received"
             self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE);
-            time.sleep(10)
             return
 
         result = CpInetResultCode()
