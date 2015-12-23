@@ -508,6 +508,7 @@ class CpPrinterService(threading.Thread):
         #This usually signifies a lost internet connection
         heartbeat_elapsed = time.time() - self.last_heartbeat_time
         if not self.heartbeat_ack and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
+            self.last_heartbeat_time = 0
             if CpDefs.LogVerboseInet:
                 print "Heartbeat ack not received"
             self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE);
