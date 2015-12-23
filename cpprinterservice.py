@@ -584,6 +584,9 @@ class CpPrinterService(threading.Thread):
 
         # self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
 
+    def inet_receive(self):
+        pass
+
 
     # def inet_heartbeat(self):
         # elapsed_heartbeat = time.time() - self.last_heartbeat_time
