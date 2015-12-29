@@ -42,9 +42,9 @@ class CpInetDefs:
     INET_HEARTBEAT_ACK_TIME = 10
 
 class CpDictKey:
-    NUMBER = CpDictKey.NUMBER
-    NAME = CpDictKey.NAME
-    TIMEOUT = CpDictKey.TIMEOUT
+    NUMBER = 'number'
+    NAME = 'name'
+    TIMEOUT = 'timeout'
 
 class CpPrinterState:
     """
