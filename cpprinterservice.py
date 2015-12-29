@@ -226,7 +226,11 @@ class CpPrinterService(threading.Thread):
 
     def inet_idle(self):
         """
+            This function Maintains printer communication with the server.
+            It accumulates commands, sends acks, and receives incoming
+            messages.
         """
+        #TODO: Seperate into logically correct states
 
         #Process print job acks
         while self.ack_queue.qsize() > 0:
@@ -426,8 +430,6 @@ class CpPrinterService(threading.Thread):
             if(self.STATEFUNC != 0):
                 self.STATEFUNC()
             time.sleep(.0001)
-
-
 
     def shutdown_thread(self):
         print 'shutting down CpInet...'
