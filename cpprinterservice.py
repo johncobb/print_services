@@ -114,12 +114,7 @@ class CpPrinterService(threading.Thread):
         self.__lock = threading.Lock()
         self.closing = False # A flag to indicate thread shutdown
         self.commands = Queue.Queue(32)
-        #self.data_buffer = Queue.Queue(128)
-        self.inet_timeout = 0
         self.inetResponseCallbackFunc = inetResponseCallbackFunc
-        self.inetBusy = False
-        self.inetResult = CpInetResult()
-        self.inetToken = ""
         self.host = CpInetDefs.INET_HOST
         self.port = CpInetDefs.INET_PORT
         self.sock = None
@@ -127,13 +122,10 @@ class CpPrinterService(threading.Thread):
         self.initialized = False
         self.current_state = CpPrinterState.INITIALIZE
         self.inetError = CpInetError()
-        self.state_timeout = time.time()
         self.exponential_backoff = 30
         self.log = CpLog()
         self.state_cb = None
-        self.retries = 1
         self.waitRetryBackoff = {1:5, 2:15, 3:30}
-        self.stateMaxRetries = 3
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
         self.command_buffer = "" #stores incomplete commands
@@ -143,7 +135,7 @@ class CpPrinterService(threading.Thread):
 
         self.ack_queue = Queue.Queue(128)
 
-        self.fmap = {0:self.init_socket,
+        self.fmap = {0:self.inet_init,
                      1:self.inet_idle,
                      2:self.inet_connect,
                      3:self.inet_close,
@@ -227,34 +219,32 @@ class CpPrinterService(threading.Thread):
         self.__lock.release()
 
 
-    def init_socket(self):
-
-
+    def inet_init(self):
         try:
             self.remoteIp = socket.gethostbyname(self.host)
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             if(CpDefs.LogVerboseInet):
-                print 'init_socket: successful (%s)' %self.remoteIp
+                print 'inet_init: successful (%s)' %self.remoteIp
 
             self.initialized = True
             self.enter_state(CpPrinterState.CONNECT)
 
             return True
         except socket.gaierror:
-            self.log.logError('init_socket: failed (hostname could not be resolved)')
-            print 'init_socket: failed (hostname could not be resolved)'
+            self.log.logError('inet_init: failed (hostname could not be resolved)')
+            print 'inet_init: failed (hostname could not be resolved)'
         except socket.error, e:
             for error in e:
                 print "error: ", e
-            self.log.logError('init_socket: failed (other)')
-            print 'init_socket: failed (other)'
+            self.log.logError('inet_init: failed (other)')
+            print 'inet_init: failed (other)'
 
         # If we get this far we received an error
-        self.handle_init_socket_error()
+        self.handle_inet_init_error()
 
         return False
 
-    def handle_init_socket_error(self):
+    def handle_inet_init_error(self):
 
         # ******** BEGIN ERROR HANDLING ********
 
@@ -272,7 +262,7 @@ class CpPrinterService(threading.Thread):
 
             # Check to see if we need to update watchdog
             # if not we are in test mode and just want to remain in
-            # init_socket indefinately
+            # inet_init indefinately
             if (CpDefs.WatchdogWaitNetworkInterface):
                 self.watchdog_set_status(CpWatchdogStatus.Error)
                 self.enter_state(CpPrinterState.WAITNETWORKINTERFACE)
