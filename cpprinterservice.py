@@ -10,17 +10,6 @@ from cplog import CpLog
 from cpstats import CpInetStats
 from cpprinter import CpPrinter
 
-# class CpInetState:
-    # INITIALIZE = 0
-    # IDLE = 1
-    # CONNECT = 2
-    # CLOSE = 3
-    # SLEEP = 4
-    # SEND = 5
-    # WAITNETWORKINTERFACE = 6
-    # RECEIVE = 7
-    # HEARTBEAT = 8
-
 class CpInetResultCode:
     RESULT_UNKNOWN = 0
     RESULT_OK = 1
@@ -52,38 +41,29 @@ class CpInetDefs:
     INET_HEARTBEAT = "HB"
     INET_HEARTBEAT_ACK_TIME = 10
 
+class CpDictKey:
+    NUMBER = CpDictKey.NUMBER
+    NAME = CpDictKey.NAME
+    TIMEOUT = CpDictKey.TIMEOUT
+
 class CpPrinterState:
     """
     States are represented as dictionaries with the following attributes:
-        NUMBER_KEY  => The State's number. Used as identification
-        NAME_KEY    => The string representation of the state. Only used for
+        CpDictKey.NUMBER  => The State's number. Used as identification
+        CpDictKey.NAME    => The string representation of the state. Only used for
                        debugging purposes
-        TIMEOUT_KEY => The state's timeout value in seconds
+        CpDictKey.TIMEOUT => The state's timeout value in seconds
     """
-    NUMBER_KEY  = 'number'
-    NAME_KEY    = 'name'
-    TIMEOUT_KEY = 'timeout'
 
-    INITIALIZE = {NUMBER_KEY:0, NAME_KEY:'INITIALIZE', TIMEOUT_KEY:5}
-    IDLE       = {NUMBER_KEY:1, NAME_KEY:'IDLE',       TIMEOUT_KEY:30}
-    CONNECT    = {NUMBER_KEY:2, NAME_KEY:'CONNECT',    TIMEOUT_KEY:5}
-    CLOSE      = {NUMBER_KEY:3, NAME_KEY:'CLOSE',      TIMEOUT_KEY:0}
-    SLEEP      = {NUMBER_KEY:4, NAME_KEY:'SLEEP',      TIMEOUT_KEY:30}
-    SEND       = {NUMBER_KEY:5, NAME_KEY:'SEND',       TIMEOUT_KEY:5}
-    RECEIVE    = {NUMBER_KEY:7, NAME_KEY:'RECEIVE',    TIMEOUT_KEY:10}
-    HEARTBEAT  = {NUMBER_KEY:8, NAME_KEY:'HEARTBEAT',  TIMEOUT_KEY:5}
-    WAITNETWORKINTERFACE = {NUMBER_KEY:6, NAME_KEY:'WAITNETWORKINTERFACE', TIMEOUT_KEY:120}
-
-# class CpInetTimeout:
-    # INITIALIZE = 5
-    # IDLE = 30
-    # CONNECT = 5
-    # CLOSE = 0
-    # SLEEP = 30
-    # SEND = 5
-    # WAITNETWORKINTERFACE = 120
-    # RECEIVE = 10
-    # HEARTBEAT = 5
+    INITIALIZE = {CpDictKey.NUMBER:0, CpDictKey.NAME:'INITIALIZE', CpDictKey.TIMEOUT:5}
+    IDLE       = {CpDictKey.NUMBER:1, CpDictKey.NAME:'IDLE',       CpDictKey.TIMEOUT:30}
+    CONNECT    = {CpDictKey.NUMBER:2, CpDictKey.NAME:'CONNECT',    CpDictKey.TIMEOUT:5}
+    CLOSE      = {CpDictKey.NUMBER:3, CpDictKey.NAME:'CLOSE',      CpDictKey.TIMEOUT:0}
+    SLEEP      = {CpDictKey.NUMBER:4, CpDictKey.NAME:'SLEEP',      CpDictKey.TIMEOUT:30}
+    SEND       = {CpDictKey.NUMBER:5, CpDictKey.NAME:'SEND',       CpDictKey.TIMEOUT:5}
+    RECEIVE    = {CpDictKey.NUMBER:7, CpDictKey.NAME:'RECEIVE',    CpDictKey.TIMEOUT:10}
+    HEARTBEAT  = {CpDictKey.NUMBER:8, CpDictKey.NAME:'HEARTBEAT',  CpDictKey.TIMEOUT:5}
+    WAITNETWORKINTERFACE = {CpDictKey.NUMBER:6, CpDictKey.NAME:'WAITNETWORKINTERFACE', CpDictKey.TIMEOUT:120}
 
 class CpInetError:
     InitializeErrors = 0
@@ -181,7 +161,7 @@ class CpPrinterService(threading.Thread):
         return self.commands.qsize()
 
     def get_current_state(self):
-        return self.current_state['name']
+        return self.current_state[CpDictKey.NAME]
 
     def get_inet_stats(self):
         return self.inet_stats
@@ -194,12 +174,12 @@ class CpPrinterService(threading.Thread):
         Sets the next state to new_state
         """
         self.current_state = new_state
-        self.STATEFUNC = self.fmap[self.current_state['number']]
+        self.STATEFUNC = self.fmap[self.current_state[CpDictKey.NUMBER]]
         self.timestamp = datetime.now()
-        self.timeout = self.current_state['timeout']
+        self.timeout = self.current_state[CpDictKey.TIMEOUT]
 
         if(CpDefs.LogVerboseInet):
-            print 'enter_state: (', self.current_state['name'], ')'
+            print 'enter_state: (', self.current_state[CpDictKey.NAME], ')'
 
         # Set the led pattern via state_cb
         # Hack if statement to prevent state_cb from being called before
@@ -213,7 +193,7 @@ class CpPrinterService(threading.Thread):
         if((datetime.now() - self.timestamp).seconds >= self.timeout):
 
             if(CpDefs.LogVerboseInet):
-                print 'state_timeout: (', self.current_state['name'], ')'
+                print 'state_timeout: (', self.current_state[CpDictKey.NAME], ')'
 
             return True
         else:
