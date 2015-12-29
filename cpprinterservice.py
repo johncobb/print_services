@@ -10,37 +10,6 @@ from cplog import CpLog
 from cpstats import CpInetStats
 from cpprinter import CpPrinter
 
-class CpInetResultCode:
-    RESULT_UNKNOWN = 0
-    RESULT_OK = 1
-    RESULT_ERROR = 2
-    RESULT_CONNECT = 3
-    RESULT_SCKTIMEOUT = 4
-    RESULT_SCKSENDERROR = 5
-    RESULT_SCKRECVERROR = 6
-    RESULT_TCPACK = 7
-    RESULT_TCPNAK = 8
-
-class CpInetResponses:
-    TOKEN_HTTPOK = "HTTP/1.1 200"
-    TOKEN_HTTPACCEPTED = "HTTP/1.1 202"
-    TOKEN_HTTPNORESPONSE = "HTTP/1.1 204"
-    TOKEN_HTTPERROR = "ERROR"
-    TOKEN_HTTPCONNECT = "CONNECT"
-    TOKEN_TCPACK = "ACK"
-    TOKEN_TCPNAK = "NAK"
-    TOKEN_TCPHBACK = "HBACK"
-
-
-class CpInetDefs:
-    INET_HOST = CpDefs.InetHost
-    INET_PORT = CpDefs.InetPort
-    INET_TCPPARAMS = CpDefs.InetTcpParms
-    INET_TIMEOUT = CpDefs.InetTimeout
-    INET_HEARTBEAT_TIME = 20
-    INET_HEARTBEAT = "HB"
-    INET_HEARTBEAT_ACK_TIME = 10
-
 class CpStateKey:
     NUMBER = 'number'
     NAME = 'name'
@@ -64,6 +33,37 @@ class CpPrinterState:
     RECEIVE    = {CpStateKey.NUMBER:7, CpStateKey.NAME:'RECEIVE',    CpStateKey.TIMEOUT:10}
     HEARTBEAT  = {CpStateKey.NUMBER:8, CpStateKey.NAME:'HEARTBEAT',  CpStateKey.TIMEOUT:5}
     WAITNETWORKINTERFACE = {CpStateKey.NUMBER:6, CpStateKey.NAME:'WAITNETWORKINTERFACE', CpStateKey.TIMEOUT:120}
+
+class CpInetResultCode:
+    RESULT_UNKNOWN = 0
+    RESULT_OK = 1
+    RESULT_ERROR = 2
+    RESULT_CONNECT = 3
+    RESULT_SCKTIMEOUT = 4
+    RESULT_SCKSENDERROR = 5
+    RESULT_SCKRECVERROR = 6
+    RESULT_TCPACK = 7
+    RESULT_TCPNAK = 8
+
+class CpInetResponses:
+    TOKEN_HTTPOK = "HTTP/1.1 200"
+    TOKEN_HTTPACCEPTED = "HTTP/1.1 202"
+    TOKEN_HTTPNORESPONSE = "HTTP/1.1 204"
+    TOKEN_HTTPERROR = "ERROR"
+    TOKEN_HTTPCONNECT = "CONNECT"
+    TOKEN_TCPACK = "ACK"
+    TOKEN_TCPNAK = "NAK"
+    TOKEN_TCPHBACK = "HBACK"
+
+class CpInetDefs:
+    INET_HOST = CpDefs.InetHost
+    INET_PORT = CpDefs.InetPort
+    INET_TCPPARAMS = CpDefs.InetTcpParms
+    INET_TIMEOUT = CpDefs.InetTimeout
+    INET_HEARTBEAT_TIME = 20
+    INET_HEARTBEAT = "HB"
+    INET_HEARTBEAT_ACK_TIME = 10
+
 
 class CpInetError:
     InitializeErrors = 0
@@ -130,7 +130,7 @@ class CpPrinterService(threading.Thread):
         self.inet_stats.LastSent = time
         self.command_buffer = "" #stores incomplete commands
 
-        self.heartbeat_ack = True #An ack isn't expected until a heartbeat is sent
+        self.heartbeat_ack_pending = False #An ack isn't expected until a heartbeat is sent
         self.last_heartbeat_time = time.time()
 
         self.ack_queue = Queue.Queue(128)
@@ -225,6 +225,8 @@ class CpPrinterService(threading.Thread):
         return False
 
     def inet_idle(self):
+        """
+        """
 
         #Process print job acks
         while self.ack_queue.qsize() > 0:
@@ -235,7 +237,7 @@ class CpPrinterService(threading.Thread):
         #If the ack timeout is reached the thread should be recreated
         #This usually signifies a lost internet connection
         heartbeat_elapsed = time.time() - self.last_heartbeat_time
-        if not self.heartbeat_ack and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
+        if self.heartbeat_ack_pending and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
             self.last_heartbeat_time = 0
             if CpDefs.LogVerboseInet:
                 print "Heartbeat ack not received"
@@ -248,20 +250,16 @@ class CpPrinterService(threading.Thread):
         try:
             print 'inet_idle: socket wait receive'
 
+            # If no data is found in the socket an exception is thrown
+            # This is the typical idle behavior of the socket
             reply = self.sock.recv(4096)
-            # print "reply: ", reply
 
-            # todo: need to test following if
-            # check to see if underlying connection was closed
+            # Connection has died unexpectedly on these conditions
             if(reply == 0 or reply == ""):
-                if CpDefs.LogVerboseInet:
-                    print "tcp reply = ", reply
-                    print "Changing state to Init"
                 self.inet_close()
                 self.enter_state(CpPrinterState.INITIALIZE)
                 return
 
-            # Parse multiple messages
             printer_commands = self.accumulate_commands(reply)
 
             for command in printer_commands:
@@ -269,8 +267,6 @@ class CpPrinterService(threading.Thread):
                 self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
 
         except socket.error, e:
-            for error in e:
-                print "error: ", error
             err = e.args[0]
             if err == 'timed out':
                 result.ResultCode = CpInetResultCode.RESULT_SCKTIMEOUT
@@ -309,7 +305,7 @@ class CpPrinterService(threading.Thread):
             self.enter_state(CpPrinterState.IDLE)
             self.watchdog_set_status(CpWatchdogStatus.Success)
 
-            self.heartbeat_ack = True #Don't expect heartbeat ack until heartbeat sent
+            self.heartbeat_ack_pending = False #Don't expect heartbeat ack until heartbeat sent
             return True
         except:
             self.log.logError('inet_connect: failed')
@@ -412,7 +408,7 @@ class CpPrinterService(threading.Thread):
         if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
             self.last_heartbeat_time = time.time()
             self.sock.send(CpDefs.InetTcpParms % CpInetDefs.INET_HEARTBEAT)
-            self.heartbeat_ack = False 
+            self.heartbeat_ack_pending = True 
             if(CpDefs.LogVerboseInet):
                 print "heartbeat sent"
 
@@ -570,6 +566,23 @@ class CpPrinterService(threading.Thread):
         return result
 
     def accumulate_commands(self, message):
+        """
+            This returns a list of strings representing printer commands.
+            An empty list signifies no printer commands and is expected,
+            frequent behavior. All returned commands are complete
+            and printable by a GX430t printer
+
+            This accumulates partial commands from self.sock into
+            complete commands. Acks are delimited by newlines. All
+            printer commands begin with CpAscii.BEGIN and end with
+            CpAscii.END. Anything within these delimitters is
+            interpreted as a complete printer command and will be
+            sent to the printer.
+
+            Any partial commands are held in self.command_buffer
+            until the next call to this wherein accumulation
+            resumes.
+        """
         commands = []
         for line in message.splitlines():
             if line == CpAscii.BEGIN:
@@ -580,14 +593,12 @@ class CpPrinterService(threading.Thread):
                 self.command_buffer = ""
 
             elif line == CpInetResponses.TOKEN_TCPHBACK:
-                print "HEARTBEAT ACK RECEIVED********************"
-                self.heartbeat_ack = True
+                self.heartbeat_ack_pending = False
 
             else:
                 self.command_buffer += line
 
         return commands
-
 
 
     # inet_close is explicitly called by inet_sleep or shutdown_thread
