@@ -52,7 +52,7 @@ class CpInetDefs:
     INET_HEARTBEAT = "HB"
     INET_HEARTBEAT_ACK_TIME = 10
 
-class CpPrinterStates:
+class CpPrinterState:
     """
     States are represented as dictionaries with the following attributes:
         NUMBER_KEY  => The State's number. Used as identification
@@ -145,7 +145,7 @@ class CpPrinterService(threading.Thread):
         self.sock = None
         self.remoteIp = None
         self.initialized = False
-        self.current_state = CpPrinterStates.INITIALIZE
+        self.current_state = CpPrinterState.INITIALIZE
         self.inetError = CpInetError()
         self.state_timeout = time.time()
         self.exponential_backoff = 30
