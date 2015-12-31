@@ -1,0 +1,352 @@
+************* Module cpprinterservice
+W:294, 0: TODO: TEST BEFORE PROD (fixme)
+W:651, 0: TODO: REVIEW AND TEST BEFORE PROD (fixme)
+W:741, 0: TODO: skip watchdog_set_status for now *** (fixme)
+C: 95, 0: Line too long (84/80) (line-too-long)
+C:139, 0: Line too long (82/80) (line-too-long)
+C:171, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:173, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:175, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:177, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:179, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:181, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:183, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:185, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:187, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:197, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:198, 0: Line too long (81/80) (line-too-long)
+C:203, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:214, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:216, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:217, 0: Line too long (87/80) (line-too-long)
+C:227, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:229, 0: Line too long (98/80) (line-too-long)
+C:237, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:259, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:267, 0: Line too long (85/80) (line-too-long)
+C:289, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:299, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:301, 0: Line too long (102/80) (line-too-long)
+C:306, 0: Line too long (99/80) (line-too-long)
+C:319, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:328, 0: Line too long (86/80) (line-too-long)
+C:351, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:358, 0: Line too long (96/80) (line-too-long)
+C:369, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:373, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:376, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:383, 0: Line too long (123/80) (line-too-long)
+C:383, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:385, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:387, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:394, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:422, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:431, 0: Line too long (93/80) (line-too-long)
+C:445, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:446, 0: Exactly one space required after comma
+            print 'inet_send: (',self.remoteIp, ':', self.port, ')'
+                                ^ (bad-whitespace)
+C:512, 0: Line too long (94/80) (line-too-long)
+W:516, 0: Unnecessary semicolon (unnecessary-semicolon)
+C:530, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:535, 0: Line too long (81/80) (line-too-long)
+C:535, 0: Exactly one space required after comma
+                self.enter_state(CpInetState.INITIALIZE,CpInetTimeout.INITIALIZE)
+                                                       ^ (bad-whitespace)
+C:561, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:562, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:565, 0: Exactly one space required after comma
+            self.enter_state(CpInetState.SEND,CpInetTimeout.SEND)
+                                             ^ (bad-whitespace)
+C:568, 0: Exactly one space required after comma
+        self.enter_state(CpInetState.HEARTBEAT,CpInetTimeout.HEARTBEAT)
+                                              ^ (bad-whitespace)
+C:579, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:586, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:591, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:610, 0: Line too long (86/80) (line-too-long)
+C:612, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:647, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:656, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:673, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:681, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:705, 0: Unnecessary parens after 'if' keyword (superfluous-parens)
+C:708, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:711, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:714, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:717, 0: Unnecessary parens after 'elif' keyword (superfluous-parens)
+C:786, 0: Unnecessary parens after 'while' keyword (superfluous-parens)
+C:791, 0: Unnecessary parens after 'while' keyword (superfluous-parens)
+W:780, 8: Redefining built-in 'input' (redefined-builtin)
+C:  1, 0: Missing module docstring (missing-docstring)
+W: 13, 0: Class has no __init__ method (no-init)
+C: 13, 0: Missing class docstring (missing-docstring)
+C: 13, 0: Old-style class defined. (old-style-class)
+R: 13, 0: Too few public methods (0/2) (too-few-public-methods)
+W: 24, 0: Class has no __init__ method (no-init)
+C:454,12: Invalid attribute name "ResultCode" (invalid-name)
+C:455,12: Invalid attribute name "Data" (invalid-name)
+C: 24, 0: Missing class docstring (missing-docstring)
+C: 24, 0: Old-style class defined. (old-style-class)
+R: 24, 0: Too few public methods (0/2) (too-few-public-methods)
+W:553,16: Attribute 'ResultCode' defined outside __init__ (attribute-defined-outside-init)
+W:555,12: Attribute 'Data' defined outside __init__ (attribute-defined-outside-init)
+W: 35, 0: Class has no __init__ method (no-init)
+C: 35, 0: Missing class docstring (missing-docstring)
+C: 35, 0: Old-style class defined. (old-style-class)
+R: 35, 0: Too few public methods (0/2) (too-few-public-methods)
+W: 46, 0: Class has no __init__ method (no-init)
+C: 46, 0: Missing class docstring (missing-docstring)
+C: 46, 0: Old-style class defined. (old-style-class)
+R: 46, 0: Too few public methods (0/2) (too-few-public-methods)
+W: 55, 0: Class has no __init__ method (no-init)
+C: 55, 0: Missing class docstring (missing-docstring)
+C: 55, 0: Old-style class defined. (old-style-class)
+R: 55, 0: Too few public methods (0/2) (too-few-public-methods)
+W: 66, 0: Class has no __init__ method (no-init)
+C:415, 8: Invalid attribute name "SendErrors" (invalid-name)
+C:285, 8: Invalid attribute name "InitializeErrors" (invalid-name)
+C:344, 8: Invalid attribute name "ConnectErrors" (invalid-name)
+C: 66, 0: Missing class docstring (missing-docstring)
+C: 66, 0: Old-style class defined. (old-style-class)
+R: 66, 0: Too few public methods (0/2) (too-few-public-methods)
+W: 76, 0: Class has no __init__ method (no-init)
+C:707,12: Invalid attribute name "ResultCode" (invalid-name)
+C:706,12: Invalid attribute name "Data" (invalid-name)
+C: 76, 0: Missing class docstring (missing-docstring)
+C: 76, 0: Old-style class defined. (old-style-class)
+R: 76, 0: Too few public methods (0/2) (too-few-public-methods)
+W: 80, 0: Class has no __init__ method (no-init)
+C: 80, 0: Missing class docstring (missing-docstring)
+C: 80, 0: Old-style class defined. (old-style-class)
+R: 80, 0: Too few public methods (0/2) (too-few-public-methods)
+W: 84, 0: Class has no __init__ method (no-init)
+C: 84, 0: Missing class docstring (missing-docstring)
+C: 84, 0: Old-style class defined. (old-style-class)
+R: 84, 0: Too few public methods (0/2) (too-few-public-methods)
+W:100, 0: Class has no __init__ method (no-init)
+C:100, 0: Missing class docstring (missing-docstring)
+C:100, 0: Old-style class defined. (old-style-class)
+R:100, 0: Too few public methods (0/2) (too-few-public-methods)
+R:107, 0: Too many instance attributes (34/7) (too-many-instance-attributes)
+C:193, 8: Invalid attribute name "STATEFUNC" (invalid-name)
+C:118, 8: Invalid attribute name "inetBusy" (invalid-name)
+C:133, 8: Invalid attribute name "waitRetryBackoff" (invalid-name)
+C:127, 8: Invalid attribute name "inetError" (invalid-name)
+C:117, 8: Invalid attribute name "inetResponseCallbackFunc" (invalid-name)
+C:154, 8: Invalid attribute name "printerThread" (invalid-name)
+C:134, 8: Invalid attribute name "stateMaxRetries" (invalid-name)
+C:119, 8: Invalid attribute name "inetResult" (invalid-name)
+C:120, 8: Invalid attribute name "inetToken" (invalid-name)
+C:124, 8: Invalid attribute name "remoteIp" (invalid-name)
+C:107, 0: Missing class docstring (missing-docstring)
+C:158, 4: Missing method docstring (missing-docstring)
+C:161, 4: Missing method docstring (missing-docstring)
+C:164, 4: Missing method docstring (missing-docstring)
+C:167, 4: Invalid method name "setStateChangedCallback" (invalid-name)
+C:167, 4: Missing method docstring (missing-docstring)
+C:170, 4: Invalid method name "lookupStateName" (invalid-name)
+C:170, 4: Missing method docstring (missing-docstring)
+R:170, 4: Too many return statements (9/6) (too-many-return-statements)
+R:170, 4: Method could be a function (no-self-use)
+C:191, 4: Missing method docstring (missing-docstring)
+C:208, 4: Missing method docstring (missing-docstring)
+C:213, 4: Missing method docstring (missing-docstring)
+C:223, 4: Missing method docstring (missing-docstring)
+C:226, 4: Missing method docstring (missing-docstring)
+C:245, 4: Missing method docstring (missing-docstring)
+C:253, 4: Missing method docstring (missing-docstring)
+C:269,29: Invalid variable name "e" (invalid-name)
+W:270,16: Unused variable 'error' (unused-variable)
+C:280, 4: Missing method docstring (missing-docstring)
+C:311, 4: Missing method docstring (missing-docstring)
+W:330, 8: No exception type(s) specified (bare-except)
+C:340, 4: Missing method docstring (missing-docstring)
+C:363, 4: Missing method docstring (missing-docstring)
+C:411, 4: Missing method docstring (missing-docstring)
+C:437, 4: Missing method docstring (missing-docstring)
+C:440, 8: Invalid variable name "tcpPacket" (invalid-name)
+C:452,12: Invalid variable name "byteCount" (invalid-name)
+C:453,29: Invalid variable name "e" (invalid-name)
+C:464,29: Invalid variable name "e" (invalid-name)
+W:437,31: Unused argument 'packet' (unused-argument)
+W:452,12: Unused variable 'byteCount' (unused-variable)
+C:482, 4: Missing method docstring (missing-docstring)
+C:501, 4: Missing method docstring (missing-docstring)
+C:545,29: Invalid variable name "e" (invalid-name)
+C:570, 4: Missing method docstring (missing-docstring)
+C:573, 4: Missing method docstring (missing-docstring)
+C:584, 4: Missing method docstring (missing-docstring)
+C:609, 4: Missing method docstring (missing-docstring)
+C:620,29: Invalid variable name "e" (invalid-name)
+C:625,30: Invalid variable name "he" (invalid-name)
+C:635,31: Invalid variable name "te" (invalid-name)
+C:644, 4: Missing method docstring (missing-docstring)
+C:665, 4: Missing method docstring (missing-docstring)
+R:665, 4: Method could be a function (no-self-use)
+C:693, 4: Missing method docstring (missing-docstring)
+W:696, 8: No exception type(s) specified (bare-except)
+C:701, 4: Missing method docstring (missing-docstring)
+R:701, 4: Method could be a function (no-self-use)
+C:727, 4: Missing method docstring (missing-docstring)
+W:734, 8: No exception type(s) specified (bare-except)
+W:745, 8: Unreachable code (unreachable)
+C:746,57: Invalid variable name "f" (invalid-name)
+C:747,16: Invalid variable name "mm" (invalid-name)
+C:753,24: Invalid variable name "e" (invalid-name)
+C:756,33: Invalid variable name "ee" (invalid-name)
+R:738, 4: Method could be a function (no-self-use)
+R:107, 0: Too many public methods (41/20) (too-many-public-methods)
+W:210, 8: Attribute 'STATEFUNC' defined outside __init__ (attribute-defined-outside-init)
+W:224, 8: Attribute 'timestamp' defined outside __init__ (attribute-defined-outside-init)
+W:211, 8: Attribute 'timeout' defined outside __init__ (attribute-defined-outside-init)
+C:762, 0: Invalid function name "printerDataReceived" (invalid-name)
+C:762, 0: Missing function docstring (missing-docstring)
+W:764, 4: Unnecessary pass statement (unnecessary-pass)
+C:766, 0: Invalid function name "inetDataReceived" (invalid-name)
+C:766, 0: Missing function docstring (missing-docstring)
+W:766,21: Unused argument 'data' (unused-argument)
+C:772, 4: Invalid constant name "printThread" (invalid-name)
+C:775, 4: Invalid constant name "inetThread" (invalid-name)
+C:780, 8: Invalid constant name "input" (invalid-name)
+
+
+Report
+======
+524 statements analysed.
+
+External dependencies
+---------------------
+::
+
+    cpdefs 
+      \-CpAscii (cpprinterservice)
+      \-CpDefs (cpprinterservice)
+    cplog 
+      \-CpLog (cpprinterservice)
+    cpprinter 
+      \-CpPrinter (cpprinterservice)
+    cpstats 
+      \-CpInetStats (cpprinterservice)
+
+
+
+Messages by category
+--------------------
+
++-----------+-------+---------+-----------+
+|type       |number |previous |difference |
++===========+=======+=========+===========+
+|convention |156    |NC       |NC         |
++-----------+-------+---------+-----------+
+|refactor   |17     |NC       |NC         |
++-----------+-------+---------+-----------+
+|warning    |29     |NC       |NC         |
++-----------+-------+---------+-----------+
+|error      |0      |NC       |NC         |
++-----------+-------+---------+-----------+
+
+
+
+Messages
+--------
+
++-------------------------------+------------+
+|message id                     |occurrences |
++===============================+============+
+|superfluous-parens             |47          |
++-------------------------------+------------+
+|missing-docstring              |43          |
++-------------------------------+------------+
+|invalid-name                   |37          |
++-------------------------------+------------+
+|line-too-long                  |15          |
++-------------------------------+------------+
+|too-few-public-methods         |10          |
++-------------------------------+------------+
+|old-style-class                |10          |
++-------------------------------+------------+
+|no-init                        |10          |
++-------------------------------+------------+
+|attribute-defined-outside-init |5           |
++-------------------------------+------------+
+|no-self-use                    |4           |
++-------------------------------+------------+
+|bad-whitespace                 |4           |
++-------------------------------+------------+
+|fixme                          |3           |
++-------------------------------+------------+
+|bare-except                    |3           |
++-------------------------------+------------+
+|unused-variable                |2           |
++-------------------------------+------------+
+|unused-argument                |2           |
++-------------------------------+------------+
+|unreachable                    |1           |
++-------------------------------+------------+
+|unnecessary-semicolon          |1           |
++-------------------------------+------------+
+|unnecessary-pass               |1           |
++-------------------------------+------------+
+|too-many-return-statements     |1           |
++-------------------------------+------------+
+|too-many-public-methods        |1           |
++-------------------------------+------------+
+|too-many-instance-attributes   |1           |
++-------------------------------+------------+
+|redefined-builtin              |1           |
++-------------------------------+------------+
+
+
+
+Global evaluation
+-----------------
+Your code has been rated at 6.15/10
+
+Duplication
+-----------
+
++-------------------------+------+---------+-----------+
+|                         |now   |previous |difference |
++=========================+======+=========+===========+
+|nb duplicated lines      |0     |NC       |NC         |
++-------------------------+------+---------+-----------+
+|percent duplicated lines |0.000 |NC       |NC         |
++-------------------------+------+---------+-----------+
+
+
+
+Statistics by type
+------------------
+
++---------+-------+-----------+-----------+------------+---------+
+|type     |number |old number |difference |%documented |%badname |
++=========+=======+===========+===========+============+=========+
+|module   |1      |NC         |NC         |0.00        |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|class    |11     |NC         |NC         |0.00        |0.00     |
++---------+-------+-----------+-----------+------------+---------+
+|method   |32     |NC         |NC         |9.38        |6.25     |
++---------+-------+-----------+-----------+------------+---------+
+|function |2      |NC         |NC         |0.00        |100.00   |
++---------+-------+-----------+-----------+------------+---------+
+
+
+
+Raw metrics
+-----------
+
++----------+-------+------+---------+-----------+
+|type      |number |%     |previous |difference |
++==========+=======+======+=========+===========+
+|code      |524    |78.33 |NC       |NC         |
++----------+-------+------+---------+-----------+
+|docstring |16     |2.39  |NC       |NC         |
++----------+-------+------+---------+-----------+
+|comment   |62     |9.27  |NC       |NC         |
++----------+-------+------+---------+-----------+
+|empty     |67     |10.01 |NC       |NC         |
++----------+-------+------+---------+-----------+
+
+
+
