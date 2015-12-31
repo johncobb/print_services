@@ -22,3 +22,4 @@ local.properties
 errlog.dat
 ctags
 tags
+pylint.txt
