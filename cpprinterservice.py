@@ -10,16 +10,29 @@ from cplog import CpLog
 from cpstats import CpInetStats
 from cpprinter import CpPrinter
 
-class CpInetState:
-    INITIALIZE = 0
-    IDLE = 1
-    CONNECT = 2
-    CLOSE = 3
-    SLEEP = 4
-    SEND = 5
-    WAITNETWORKINTERFACE = 6
-    RECEIVE = 7
-    HEARTBEAT = 8
+class CpStateKey:
+    NUMBER = 'number'
+    NAME = 'name'
+    TIMEOUT = 'timeout'
+
+class CpPrinterState:
+    """
+    States are represented as dictionaries with the following attributes:
+        CpStateKey.NUMBER  => The State's number. Used as identification
+        CpStateKey.NAME    => The string representation of the state. Only used for
+                       debugging purposes
+        CpStateKey.TIMEOUT => The state's timeout value in seconds
+    """
+
+    INITIALIZE = {CpStateKey.NUMBER:0, CpStateKey.NAME:'INITIALIZE', CpStateKey.TIMEOUT:5}
+    IDLE       = {CpStateKey.NUMBER:1, CpStateKey.NAME:'IDLE',       CpStateKey.TIMEOUT:30}
+    CONNECT    = {CpStateKey.NUMBER:2, CpStateKey.NAME:'CONNECT',    CpStateKey.TIMEOUT:5}
+    CLOSE      = {CpStateKey.NUMBER:3, CpStateKey.NAME:'CLOSE',      CpStateKey.TIMEOUT:0}
+    SLEEP      = {CpStateKey.NUMBER:4, CpStateKey.NAME:'SLEEP',      CpStateKey.TIMEOUT:30}
+    SEND       = {CpStateKey.NUMBER:5, CpStateKey.NAME:'SEND',       CpStateKey.TIMEOUT:5}
+    RECEIVE    = {CpStateKey.NUMBER:7, CpStateKey.NAME:'RECEIVE',    CpStateKey.TIMEOUT:10}
+    HEARTBEAT  = {CpStateKey.NUMBER:8, CpStateKey.NAME:'HEARTBEAT',  CpStateKey.TIMEOUT:5}
+    WAITNETWORKINTERFACE = {CpStateKey.NUMBER:6, CpStateKey.NAME:'WAITNETWORKINTERFACE', CpStateKey.TIMEOUT:120}
 
 class CpInetResultCode:
     RESULT_UNKNOWN = 0
@@ -42,7 +55,6 @@ class CpInetResponses:
     TOKEN_TCPNAK = "NAK"
     TOKEN_TCPHBACK = "HBACK"
 
-
 class CpInetDefs:
     INET_HOST = CpDefs.InetHost
     INET_PORT = CpDefs.InetPort
@@ -52,16 +64,6 @@ class CpInetDefs:
     INET_HEARTBEAT = "HB"
     INET_HEARTBEAT_ACK_TIME = 10
 
-class CpInetTimeout:
-    INITIALIZE = 5
-    IDLE = 30
-    CONNECT = 5
-    CLOSE = 0
-    SLEEP = 30
-    SEND = 5
-    WAITNETWORKINTERFACE = 120
-    RECEIVE = 10
-    HEARTBEAT = 5
 
 class CpInetError:
     InitializeErrors = 0
@@ -112,36 +114,29 @@ class CpPrinterService(threading.Thread):
         self.__lock = threading.Lock()
         self.closing = False # A flag to indicate thread shutdown
         self.commands = Queue.Queue(32)
-        #self.data_buffer = Queue.Queue(128)
-        self.inet_timeout = 0
         self.inetResponseCallbackFunc = inetResponseCallbackFunc
-        self.inetBusy = False
-        self.inetResult = CpInetResult()
-        self.inetToken = ""
         self.host = CpInetDefs.INET_HOST
         self.port = CpInetDefs.INET_PORT
         self.sock = None
         self.remoteIp = None
         self.initialized = False
-        self.current_state = CpInetState.INITIALIZE
+        self.current_state = CpPrinterState.INITIALIZE
         self.inetError = CpInetError()
-        self.state_timeout = time.time()
         self.exponential_backoff = 30
         self.log = CpLog()
         self.state_cb = None
-        self.retries = 1
         self.waitRetryBackoff = {1:5, 2:15, 3:30}
-        self.stateMaxRetries = 3
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
         self.command_buffer = "" #stores incomplete commands
 
-        self.heartbeat_ack = True #An ack isn't expected until a heartbeat is sent
+        #An ack isn't expected until a heartbeat is sent
+        self.heartbeat_ack_pending = False
         self.last_heartbeat_time = time.time()
 
         self.ack_queue = Queue.Queue(128)
 
-        self.fmap = {0:self.init_socket,
+        self.fmap = {0:self.inet_init,
                      1:self.inet_idle,
                      2:self.inet_connect,
                      3:self.inet_close,
@@ -155,11 +150,14 @@ class CpPrinterService(threading.Thread):
 
         threading.Thread.__init__(self)
 
+    def run(self):
+        self._target(*self._args)
+
     def get_queue_depth(self):
         return self.commands.qsize()
 
     def get_current_state(self):
-        return self.lookupStateName(self.current_state)
+        return self.current_state[CpStateKey.NAME]
 
     def get_inet_stats(self):
         return self.inet_stats
@@ -167,54 +165,33 @@ class CpPrinterService(threading.Thread):
     def setStateChangedCallback(self, callback):
         self.state_cb = callback
 
-    def lookupStateName(self, index):
-        if(index == 0):
-            return "INITIALIZE"
-        elif(index == 1):
-            return "IDLE"
-        elif(index == 2):
-            return "CONNECT"
-        elif(index == 3):
-            return "CLOSE"
-        elif(index == 4):
-            return "SLEEP"
-        elif(index == 5):
-            return "SEND"
-        elif(index == 6):
-            return "WAITNETWORKINTERFACE"
-        elif(index == 7):
-            return "RECEIVE"
-        elif(index == 8):
-            return "HEARTBEAT"
-
-
-    def enter_state(self, new_state, timeout):
+    def enter_state(self, new_state):
+        """
+            Sets the next state to new_state
+            A call to this will not immediately change the state, but
+            but will enter once the current state function has returned.
+        """
         self.current_state = new_state
-        self.STATEFUNC = self.fmap[self.current_state]
+        self.STATEFUNC = self.fmap[self.current_state[CpStateKey.NUMBER]]
         self.timestamp = datetime.now()
-        self.timeout = timeout
+        self.timeout = self.current_state[CpStateKey.TIMEOUT]
 
-        if(CpDefs.LogVerboseInet):
-            print 'enter_state: (', self.lookupStateName(self.current_state), ')'
+        if CpDefs.LogVerboseInet:
+            print 'enter_state: (', self.current_state[CpStateKey.NAME], ')'
 
         # Set the led pattern via state_cb
         # Hack if statement to prevent state_cb from being called before
         # setStateChangedCallback is set by cptaskmanager
-        if (self.state_cb == None):
+        if self.state_cb == None:
             return
         else:
             self.state_cb(new_state)
 
-    def exit_state(self):
-        self.current_state = 0
-        self.STATEFUNC = 0
-        self.timeout = 0.0
-
     def state_timedout(self):
-        if((datetime.now() - self.timestamp).seconds >= self.timeout):
+        if (datetime.now() - self.timestamp).seconds >= self.timeout:
 
-            if(CpDefs.LogVerboseInet):
-                print 'state_timeout: (', self.lookupStateName(self.current_state), ')'
+            if CpDefs.LogVerboseInet:
+                print 'state_timeout: (', self.current_state[CpStateKey.NAME], ')'
 
             return True
         else:
@@ -223,109 +200,117 @@ class CpPrinterService(threading.Thread):
     def reset_state_timeout(self):
         self.timestamp = datetime.now()
 
-    def inet_handler(self):
-        if (CpDefs.WatchdogWaitNetworkInterface):
-            # Start out waiting for network interface
-            self.enter_state(CpInetState.WAITNETWORKINTERFACE, CpInetTimeout.WAITNETWORKINTERFACE)
-        else:
-            # Start out initializing (Use Case for testing without watchdog)
-            self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE)
-
-#         self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE)
-
-        while not self.closing:
-            if(self.STATEFUNC != 0):
-                self.STATEFUNC()
-            time.sleep(.0001)
-
-
-    def run(self):
-        self._target(*self._args)
-
-    def shutdown_thread(self):
-        print 'shutting down CpInet...'
-        self.inet_close() # New code added
-        self.__lock.acquire()
-        self.closing = True
-        self.__lock.release()
-
-
-    def init_socket(self):
-
-
+    def inet_init(self):
         try:
             self.remoteIp = socket.gethostbyname(self.host)
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            if(CpDefs.LogVerboseInet):
-                print 'init_socket: successful (%s)' %self.remoteIp
+            if CpDefs.LogVerboseInet:
+                print 'inet_init: successful (%s)' %self.remoteIp
 
             self.initialized = True
-            self.enter_state(CpInetState.CONNECT, CpInetTimeout.CONNECT)
+            self.enter_state(CpPrinterState.CONNECT)
 
             return True
         except socket.gaierror:
-            self.log.logError('init_socket: failed (hostname could not be resolved)')
-            print 'init_socket: failed (hostname could not be resolved)'
+            self.log.logError('inet_init: failed (hostname could not be resolved)')
+            print 'inet_init: failed (hostname could not be resolved)'
         except socket.error, e:
             for error in e:
                 print "error: ", e
-            self.log.logError('init_socket: failed (other)')
-            print 'init_socket: failed (other)'
+            self.log.logError('inet_init: failed (other)')
+            print 'inet_init: failed (other)'
 
         # If we get this far we received an error
-        self.handle_init_socket_error()
+        self.handle_inet_init_error()
 
         return False
 
-    def handle_init_socket_error(self):
+    def inet_idle(self):
+        """
+            This function Maintains printer communication with the server.
+            It accumulates commands, sends acks, and receives incoming
+            messages.
+        """
+        #TODO: Seperate into logically correct states
 
-        # ******** BEGIN ERROR HANDLING ********
+        #Process print job acks
+        while self.ack_queue.qsize() > 0:
+            self.sock.send(CpDefs.InetTcpParms % self.ack_queue.get())
+            print "Sent ACK"
+            self.ack_queue.task_done()
 
-        # If we get this far we received an error
-        self.inetError.InitializeErrors += 1
-        # Updated Statistics
-        self.inet_stats.InitErrors += 1
+        #If the ack timeout is reached the thread should be recreated
+        #This usually signifies a lost internet connection
+        heartbeat_elapsed = time.time() - self.last_heartbeat_time
+        if self.heartbeat_ack_pending and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
+            self.last_heartbeat_time = 0
+            if CpDefs.LogVerboseInet:
+                print "Heartbeat ack not received"
+            self.enter_state(CpPrinterState.INITIALIZE)
+            return
 
-        if (self.inetError.InitializeErrors > self.inetError.InitializeMax):
-            print 'Max Initialize Errors'
-            # Reset Error Counter
-            self.inetError.InitializeErrors = 0
-            # Handle Max Errors
-            # TODO: TEST BEFORE PROD
+        result = CpInetResultCode()
 
-            # Check to see if we need to update watchdog
-            # if not we are in test mode and just want to remain in
-            # init_socket indefinately
-            if (CpDefs.WatchdogWaitNetworkInterface):
-                self.watchdog_set_status(CpWatchdogStatus.Error)
-                self.enter_state(CpInetState.WAITNETWORKINTERFACE, CpInetTimeout.WAITNETWORKINTERFACE)
+        # Process the response
+        try:
+            print 'inet_idle: socket wait receive'
 
-            return False
+            # If no data is found in the socket an exception is thrown
+            # This is the typical idle behavior of the socket
+            reply = self.sock.recv(4096)
 
-        # Allow some settle time before trying again
-        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inetError.InitializeErrors]
-        time.sleep(self.waitRetryBackoff[self.inetError.InitializeErrors])
+            # Connection has died unexpectedly on these conditions
+            if reply == 0 or reply == "":
+                self.inet_close()
+                self.enter_state(CpPrinterState.INITIALIZE)
+                return
 
-        # ******** END ERROR HANDLING ********
+            printer_commands = self.accumulate_commands(reply)
+
+            for command in printer_commands:
+                self.printerThread.enqueue_command(command)
+                self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
+
+        except socket.error, e:
+            err = e.args[0]
+            if err == 'timed out':
+                result.ResultCode = CpInetResultCode.RESULT_SCKTIMEOUT
+                print 'socket timeout waiting for job'
+            else:
+                result.ResultCode = CpInetResultCode.RESULT_SCKRECVERROR
+
+            result.Data = e.args[0]
+
+            self.log.logError('printer_idle jobs: 0')
+            print 'inet_idle: jobs: 0 found.'
+
+        # Check to see if there is a queued message
+        if self.commands.qsize() > 0:
+            if CpDefs.LogVerboseInet:
+                print 'inet_idle record found'
+
+            self.enter_state(CpPrinterState.SEND)
+            return
+
+        self.enter_state(CpPrinterState.HEARTBEAT)
 
     def inet_connect(self):
-
         try:
             self.sock.connect((self.remoteIp, self.port))
             # New Code for Timeout
             self.sock.settimeout(CpInetDefs.INET_TIMEOUT)
             # End New Code for Timeout
 
-            if(CpDefs.LogVerboseInet):
+            if CpDefs.LogVerboseInet:
                 print 'inet_connect: successful'
 
-            # todo: automatically send up the PrinterId to check in with server
+            # TODO: automatically send up the PrinterId to check in with server
             self.enqueue_packet(CpDefs.PrinterId)
 
-            self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
+            self.enter_state(CpPrinterState.IDLE)
             self.watchdog_set_status(CpWatchdogStatus.Success)
 
-            self.heartbeat_ack = True #Don't expect heartbeat ack until heartbeat sent
+            self.heartbeat_ack_pending = False #Don't expect heartbeat ack until heartbeat sent
             return True
         except:
             self.log.logError('inet_connect: failed')
@@ -336,29 +321,16 @@ class CpPrinterService(threading.Thread):
 
         return False
 
+    def inet_sleep(self):
+        # Check to see if there is a queued message
+        if self.commands.qsize() > 0:
+            self.enter_state(CpPrinterState.INITIALIZE)
+            return
 
-    def handle_inet_connect_error(self):
-
-        # ******** BEGIN ERROR HANDLING ********
-
-        self.inetError.ConnectErrors += 1
-
-        # Updated Statistics
-        self.inet_stats.ConnectErrors += 1
-
-        print 'CONNECT FAILED'
-
-        if (self.inetError.ConnectErrors > self.inetError.ConnectMax):
-            # Handle Max Errors
-            self.inetError.ConnectErrors = 0
-            self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE)
-            return False
-
-        # Allow some settle time before trying again
-        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inetError.ConnectErrors]
-        time.sleep(self.waitRetryBackoff[self.inetError.ConnectErrors])
-
-        # ******** END ERROR HANDLING ********
+        # Check to wake send ping once every 60s
+        if self.state_timedout() == True:
+            self.enter_state(CpPrinterState.INITIALIZE)
+            return
 
     def inet_send(self):
 
@@ -366,14 +338,14 @@ class CpPrinterService(threading.Thread):
         # going to idle. This will keep us from bouncing between
         # idle and connected states thus decreasing latency.
         # Reset the timer for each new message
-        if(self.state_timedout() == True):
-            self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
+        if self.state_timedout() == True:
+            self.enter_state(CpPrinterState.IDLE)
             return True
 
-        if (self.commands.qsize() > 0):
+        if self.commands.qsize() > 0:
             self.reset_state_timeout()
 
-            if(CpDefs.LogVerboseInet):
+            if CpDefs.LogVerboseInet:
                 print 'Command found'
 
             packet = self.commands.get(True)
@@ -382,16 +354,16 @@ class CpPrinterService(threading.Thread):
 
             if(result.ResultCode == CpInetResultCode.RESULT_TCPACK or result.ResultCode == CpInetResultCode.RESULT_TCPNAK):
                 print 'we received an ack'
-                if(result.ResultCode == CpInetResultCode.RESULT_TCPNAK):
+                if result.ResultCode == CpInetResultCode.RESULT_TCPNAK:
                     self.inet_stats.Naks += 1
-                    if(CpDefs.LogVerboseInet):
+                    if CpDefs.LogVerboseInet:
                         print 'NAK: ', result.Data
 
                 # Updated Statistics
                 self.inet_stats.Sent += 1
                 self.inet_stats.LastSent = time
 
-                if(CpDefs.LogVerboseInet):
+                if CpDefs.LogVerboseInet:
                     print 'SEND SUCCESSFUL'
 
                 self.commands.task_done()
@@ -407,6 +379,123 @@ class CpPrinterService(threading.Thread):
             # to avoid the error handling
             return True
 
+    def inet_waitnetworkinterface(self):
+        # Allow the PON/POFF commands 120s before
+        # attempting to initialize a new connection
+        if self.state_timedout() == True:
+            self.enter_state(CpPrinterState.INITIALIZE)
+            return False
+
+        # TODO: REVIEW AND TEST BEFORE PROD
+        found = self.query_interface(IfConfigVars.Interface)
+
+        # Check to see if we have a network interface
+        if found:
+            print 'inet_waitnetworkinterface: found successful'
+            self.enter_state(CpPrinterState.INITIALIZE)
+        else:
+            print 'inet_waitnetworkinterface wait retry 1 sec.'
+            time.sleep(1)
+
+        return True
+
+    def inet_receive(self):
+        pass
+
+    def inet_heartbeat(self):
+        """
+            Heartbeats are sent to the server to show that the
+            connection remains open. A heartbeat isn't sent every
+            time this state is entered, but rather once every
+            INET_HEARTBEAT_TIME
+        """
+        elapsed_heartbeat = time.time() - self.last_heartbeat_time
+        if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
+            self.last_heartbeat_time = time.time()
+            self.sock.send(CpDefs.InetTcpParms % CpInetDefs.INET_HEARTBEAT)
+            self.heartbeat_ack_pending = True
+            if CpDefs.LogVerboseInet:
+                print "heartbeat sent"
+
+        self.enter_state(CpPrinterState.IDLE)
+
+    def inet_handler(self):
+        if CpDefs.WatchdogWaitNetworkInterface:
+            # Start out waiting for network interface
+            self.enter_state(CpPrinterState.WAITNETWORKINTERFACE)
+        else:
+            # Start out initializing (Use Case for testing without watchdog)
+            self.enter_state(CpPrinterState.INITIALIZE)
+
+        while not self.closing:
+            if self.STATEFUNC != 0:
+                self.STATEFUNC()
+            time.sleep(.0001)
+
+    def shutdown_thread(self):
+        print 'shutting down CpInet...'
+        self.inet_close()
+        self.__lock.acquire()
+        self.closing = True
+        self.__lock.release()
+
+    def handle_inet_init_error(self):
+
+        # ******** BEGIN ERROR HANDLING ********
+
+        # If we get this far we received an error
+        self.inetError.InitializeErrors += 1
+        # Updated Statistics
+        self.inet_stats.InitErrors += 1
+
+        if self.inetError.InitializeErrors > self.inetError.InitializeMax:
+            print 'Max Initialize Errors'
+            # Reset Error Counter
+            self.inetError.InitializeErrors = 0
+            # Handle Max Errors
+            # TODO: TEST BEFORE PROD
+
+            # Check to see if we need to update watchdog
+            # if not we are in test mode and just want to remain in
+            # inet_init indefinately
+            if CpDefs.WatchdogWaitNetworkInterface:
+                self.watchdog_set_status(CpWatchdogStatus.Error)
+                self.enter_state(CpPrinterState.WAITNETWORKINTERFACE)
+
+            return False
+
+        # Allow some settle time before trying again
+        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inetError.InitializeErrors]
+        time.sleep(self.waitRetryBackoff[self.inetError.InitializeErrors])
+
+        # ******** END ERROR HANDLING ********
+
+
+
+    def handle_inet_connect_error(self):
+
+        # ******** BEGIN ERROR HANDLING ********
+
+        self.inetError.ConnectErrors += 1
+
+        # Updated Statistics
+        self.inet_stats.ConnectErrors += 1
+
+        print 'CONNECT FAILED'
+
+        if self.inetError.ConnectErrors > self.inetError.ConnectMax:
+            # Handle Max Errors
+            self.inetError.ConnectErrors = 0
+            self.enter_state(CpPrinterState.INITIALIZE)
+            return False
+
+        # Allow some settle time before trying again
+        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inetError.ConnectErrors]
+        time.sleep(self.waitRetryBackoff[self.inetError.ConnectErrors])
+
+        # ******** END ERROR HANDLING ********
+
+
 
     def handle_inet_send_error(self):
 
@@ -419,12 +508,12 @@ class CpPrinterService(threading.Thread):
 
         print 'SEND FAILED'
 
-        if (self.inetError.SendErrors > self.inetError.SendMax):
+        if self.inetError.SendErrors > self.inetError.SendMax:
             # We have exceeded the maximum allowable attempts so
             # close and reinitialize the connection
             self.inetError.SendErrors = 0
             self.inet_close()
-            self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE)
+            self.enter_state(CpPrinterState.INITIALIZE)
             return False
 
         # Allow some settle time before trying again
@@ -442,7 +531,7 @@ class CpPrinterService(threading.Thread):
 
         result = CpInetResultCode()
 
-        if(CpDefs.LogVerboseInet):
+        if CpDefs.LogVerboseInet:
             print 'inet_send: (',self.remoteIp, ':', self.port, ')'
             print 'inet_send: ', tcpPacket
 
@@ -480,6 +569,23 @@ class CpPrinterService(threading.Thread):
         return result
 
     def accumulate_commands(self, message):
+        """
+            This returns a list of strings representing printer commands.
+            An empty list signifies no printer commands and is expected,
+            frequent behavior. All returned commands are complete
+            and printable by a GX430t printer
+
+            This accumulates partial commands from self.sock into
+            complete commands. Acks are delimited by newlines. All
+            printer commands begin with CpAscii.BEGIN and end with
+            CpAscii.END. Anything within these delimitters is
+            interpreted as a complete printer command and will be
+            sent to the printer.
+
+            Any partial commands are held in self.command_buffer
+            until the next call to this wherein accumulation
+            resumes.
+        """
         commands = []
         for line in message.splitlines():
             if line == CpAscii.BEGIN:
@@ -490,126 +596,21 @@ class CpPrinterService(threading.Thread):
                 self.command_buffer = ""
 
             elif line == CpInetResponses.TOKEN_TCPHBACK:
-                print "HEARTBEAT ACK RECEIVED********************"
-                self.heartbeat_ack = True
+                self.heartbeat_ack_pending = False
 
             else:
                 self.command_buffer += line
 
         return commands
 
-    def inet_idle(self):
-
-        #Process print job acks
-        while self.ack_queue.qsize() > 0:
-            self.sock.send(CpDefs.InetTcpParms % self.ack_queue.get())
-            print "Sent ACK"
-            self.ack_queue.task_done()
-
-        #If the ack timeout is reached the thread should be recreated
-        #This usually signifies a lost internet connection
-        heartbeat_elapsed = time.time() - self.last_heartbeat_time
-        if not self.heartbeat_ack and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
-            self.last_heartbeat_time = 0
-            if CpDefs.LogVerboseInet:
-                print "Heartbeat ack not received"
-            self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE);
-            return
-
-        result = CpInetResultCode()
-
-        # Process the response
-        try:
-            print 'inet_idle: socket wait receive'
-
-            reply = self.sock.recv(4096)
-            # print "reply: ", reply
-
-            # todo: need to test following if
-            # check to see if underlying connection was closed
-            if(reply == 0 or reply == ""):
-                if CpDefs.LogVerboseInet:
-                    print "tcp reply = ", reply
-                    print "Changing state to Init"
-                self.inet_close()
-                self.enter_state(CpInetState.INITIALIZE,CpInetTimeout.INITIALIZE)
-                return
-
-            # Parse multiple messages
-            printer_commands = self.accumulate_commands(reply)
-
-            for command in printer_commands:
-                self.printerThread.enqueue_command(command)
-                self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
-
-        except socket.error, e:
-            for error in e:
-                print "error: ", error
-            err = e.args[0]
-            if err == 'timed out':
-                result.ResultCode = CpInetResultCode.RESULT_SCKTIMEOUT
-                print 'socket timeout waiting for job'
-            else:
-                result.ResultCode = CpInetResultCode.RESULT_SCKRECVERROR
-
-            result.Data = e.args[0]
-
-            self.log.logError('printer_idle jobs: 0')
-            print 'inet_idle: jobs: 0 found.'
-
-        # Check to see if there is a queued message
-        if (self.commands.qsize() > 0):
-            if(CpDefs.LogVerboseInet):
-                print 'inet_idle record found'
-
-            self.enter_state(CpInetState.SEND,CpInetTimeout.SEND)
-            return
-
-        self.enter_state(CpInetState.HEARTBEAT,CpInetTimeout.HEARTBEAT)
-
-    def inet_receive(self):
-        pass
-
-    def inet_heartbeat(self):
-        elapsed_heartbeat = time.time() - self.last_heartbeat_time
-        if elapsed_heartbeat > CpInetDefs.INET_HEARTBEAT_TIME:
-            self.last_heartbeat_time = time.time()
-            self.sock.send(CpDefs.InetTcpParms % CpInetDefs.INET_HEARTBEAT)
-            self.heartbeat_ack = False
-            if(CpDefs.LogVerboseInet):
-                print "heartbeat sent"
-
-        self.enter_state(CpInetState.IDLE, CpInetTimeout.IDLE)
-
-    def inet_sleep(self):
-        # Check to see if there is a queued message
-        if (self.commands.qsize() > 0):
-            self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE)
-            return
-
-        # Check to wake send ping once every 60s
-        if(self.state_timedout() == True):
-            self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE)
-            return
 
     # inet_close is explicitly called by inet_sleep or shutdown_thread
     # inet_close is not used in conjunction with enter_state function
-#     def inet_close2(self):
-#
-#         try:
-#             self.sock.shutdown(socket.SHUT_RDWR)
-#             self.sock.close()
-#             print 'inet_close: successful'
-#             return True
-#         except:
-#             self.log.logError('inet_close: failed')
-#             print 'inet_close: failed'
-#             return False
 
     def inet_close(self):
         # Check to see if we initialized the socket. If not calling shutdown and close
         # will throw an error so just return
-        if(self.initialized == False):
+        if self.initialized == False:
             return
 
         try:
@@ -641,26 +642,6 @@ class CpPrinterService(threading.Thread):
         return False
 
 
-    def inet_waitnetworkinterface(self):
-        # Allow the PON/POFF commands 120s before
-        # attempting to initialize a new connection
-        if(self.state_timedout() == True):
-            self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE)
-            return False
-
-        # TODO: REVIEW AND TEST BEFORE PROD
-        found = self.query_interface(IfConfigVars.Interface)
-
-
-        # Check to see if we have a network interface
-        if (found):
-            print 'inet_waitnetworkinterface: found successful'
-            self.enter_state(CpInetState.INITIALIZE, CpInetTimeout.INITIALIZE)
-        else:
-            print 'inet_waitnetworkinterface wait retry 1 sec.'
-            time.sleep(1)
-
-        return True
 
     def query_interface(self, interface):
 
@@ -670,7 +651,7 @@ class CpPrinterService(threading.Thread):
             #wait for initialize
             time.sleep(InitVars.NumTry_Connection*InitVars.TimeDelayIncrement)
 
-            if (interface == 'ppp0'):
+            if interface == 'ppp0':
                 #check for connecton
                 for line in open('/proc/net/dev', 'r'):
                     if interface in line:
@@ -678,7 +659,7 @@ class CpPrinterService(threading.Thread):
                         print "Active Network Found"
                         return True
 
-            if (interface == 'eth0'):
+            if interface == 'eth0':
                 for line in open('/proc/net/dev', 'r'):
                     if interface in line:
                         return True
@@ -702,19 +683,19 @@ class CpPrinterService(threading.Thread):
 
         inet_result = CpInetResult()
 
-        if(result.find(CpInetResponses.TOKEN_HTTPOK) > -1):
+        if result.find(CpInetResponses.TOKEN_HTTPOK) > -1:
             inet_result.Data = result
             inet_result.ResultCode = CpInetResultCode.RESULT_OK
-        elif(result.find(CpInetResponses.TOKEN_HTTPNORESPONSE) > -1):
+        elif result.find(CpInetResponses.TOKEN_HTTPNORESPONSE) > -1:
             inet_result.Data = result
             inet_result.ResultCode = CpInetResultCode.RESULT_OK
-        elif(result.find(CpInetResponses.TOKEN_HTTPERROR) > -1):
+        elif result.find(CpInetResponses.TOKEN_HTTPERROR) > -1:
             inet_result.Data = result
             inet_result.ResultCode = CpInetResultCode.RESULT_ERROR
-        elif(result.find(CpInetResponses.TOKEN_TCPACK) > -1):
+        elif result.find(CpInetResponses.TOKEN_TCPACK) > -1:
             inet_result.Data = result
             inet_result.ResultCode = CpInetResultCode.RESULT_TCPACK
-        elif(result.find(CpInetResponses.TOKEN_TCPNAK) > -1):
+        elif result.find(CpInetResponses.TOKEN_TCPNAK) > -1:
             inet_result.Data = result
             inet_result.ResultCode = CpInetResultCode.RESULT_TCPNAK
         else:
