@@ -96,6 +96,13 @@ class CpInetDefs:
 
 
 class CpInetError:
+    """
+        This class dictates the maximum number of erros of
+        various types as well as the number of these errors
+        encountered. It takes the form:
+            <Error Type>Errors: Number of errors of <Error Type>
+            <Error Type>Max: Maximum allowed instances of <Error Type>
+    """
     InitializeErrors = 0
     InitializeMax = 3
     ConnectErrors = 0
@@ -156,7 +163,7 @@ class CpPrinterService(threading.Thread):
         self.waitRetryBackoff = {1:5, 2:15, 3:30}
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
-        self.command_buffer = "" #stores incomplete commands
+        self.printer_command_buffer = "" #stores incomplete printer commands
 
         #An ack isn't expected until a heartbeat is sent
         self.heartbeat_ack_pending = False
@@ -385,11 +392,11 @@ class CpPrinterService(threading.Thread):
                 self.handle_inet_send_error()
 
             return True
-        else:
-            # Otherwise we have no new messages and the current
-            # state has not yet timed out so return True in order
-            # to avoid the error handling
-            return True
+
+        # Otherwise we have no new messages and the current
+        # state has not yet timed out so return True in order
+        # to avoid the error handling
+        return True
 
     def inet_waitnetworkinterface(self):
         # Allow the PON/POFF commands 120s before
@@ -461,8 +468,6 @@ class CpPrinterService(threading.Thread):
             print 'Max Initialize Errors'
             # Reset Error Counter
             self.inet_error.InitializeErrors = 0
-            # Handle Max Errors
-            # TODO: TEST BEFORE PROD
 
             # Check to see if we need to update watchdog
             # if not we are in test mode and just want to remain in
@@ -495,14 +500,8 @@ class CpPrinterService(threading.Thread):
         print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.ConnectErrors]
         time.sleep(self.waitRetryBackoff[self.inet_error.ConnectErrors])
 
-        # ******** END ERROR HANDLING ********
-
-
 
     def handle_inet_send_error(self):
-
-        # ******** BEGIN ERROR HANDLING ********
-
         self.inet_error.SendErrors += 1
 
         # Updated Statistics
@@ -522,7 +521,6 @@ class CpPrinterService(threading.Thread):
         print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.SendErrors]
         time.sleep(self.waitRetryBackoff[self.inet_error.SendErrors])
 
-        # ******** END ERROR HANDLING ********
 
     # inet_send_packet is explicitly called by inet_send
     def inet_send_packet(self, packet):
@@ -584,24 +582,24 @@ class CpPrinterService(threading.Thread):
             interpreted as a complete printer command and will be
             sent to the printer.
 
-            Any partial commands are held in self.command_buffer
+            Any partial commands are held in self.printer_command_buffer
             until the next call to this wherein accumulation
             resumes.
         """
         commands = []
         for line in message.splitlines():
             if line == CpAscii.BEGIN:
-                self.command_buffer = ""
+                self.printer_command_buffer = ""
 
             elif line == CpAscii.END:
-                commands.append(self.command_buffer)
-                self.command_buffer = ""
+                commands.append(self.printer_command_buffer)
+                self.printer_command_buffer = ""
 
             elif line == CpInetResponses.TOKEN_TCPHBACK:
                 self.heartbeat_ack_pending = False
 
             else:
-                self.command_buffer += line
+                self.printer_command_buffer += line
 
         return commands
 
@@ -764,8 +762,5 @@ if __name__ == '__main__':
             inetThread.enqueue_packet(CpDefs.PrinterId)
         elif input == '1':
             printThread.enqueue_command("hello world\r")
-        else:
-            pass
-
 
         time.sleep(.5)
