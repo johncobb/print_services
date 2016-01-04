@@ -77,17 +77,15 @@ class CpPrinter(threading.Thread):
     def printer_send(self, cmd):
         if CpDefs.LogVerbosePrinter:
             print 'sending printer command ', cmd
-        #self.__lock.acquire()
-        #self.ser.write(cmd + '\r')
         print "Wrote: ", self.ser.write(cmd)
         print "Printing Responses:"
         self.ser.write("~HQES")
         self.ser.write("~HQMI")
         for response in self.process_response():
             print "Response: ", response
-        #self.__lock.release()
         
-    '''
+    def print_handler(self):
+    """
         method: print_handler
         1. Open serial port
         2. process local printer commands
@@ -95,9 +93,7 @@ class CpPrinter(threading.Thread):
         4. check for new message indicator (0x00)
         5. enqueue new message
         6. reset the buffer
-    '''
-    def print_handler(self):
-        
+    """
         
         if self.ser.isOpen():
             self.ser.close()
