@@ -325,7 +325,6 @@ class CpPrinterService(threading.Thread):
             self.enqueue_packet(CpDefs.PrinterId)
 
             self.enter_state(CpPrinterState.IDLE)
-            self.watchdog_set_status(CpWatchdogStatus.Success)
 
             self.heartbeat_ack_pending = False #Don't expect heartbeat ack until heartbeat sent
             return True
@@ -473,7 +472,6 @@ class CpPrinterService(threading.Thread):
             # if not we are in test mode and just want to remain in
             # inet_init indefinately
             if CpDefs.WatchdogWaitNetworkInterface:
-                self.watchdog_set_status(CpWatchdogStatus.Error)
                 self.enter_state(CpPrinterState.WAITNETWORKINTERFACE)
 
             return False
@@ -703,29 +701,6 @@ class CpPrinterService(threading.Thread):
             inet_result.ResultCode = CpInetResultCode.RESULT_UNKNOWN
 
         return inet_result
-
-    def watchdog_set_status(self, status):
-
-        '''
-            *** TODO: skip watchdog_set_status for now ***
-        '''
-        return
-
-        try:
-            with open(CpDefs.WatchdogFilePath, "r+b") as f: #mmap file
-                mm = mmap.mmap(f.fileno(), 0)
-
-            mm[1:2] = status
-            mm.flush()
-            mm.close()
-
-        except IOError, e:
-            #self.log.logError('watchdog_set_status: failed (%s)')  e.args[0]
-            print 'watchdog_set_status: failed (%s)' % e.args[0]
-        except EnvironmentError, ee:
-            print 'watchdog_set_status: failed (%s)' % ee.args[0]
-        except:
-            print 'watchdog_set_status: failed'
 
 
 def printerDataReceived(data):

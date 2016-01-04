@@ -50,9 +50,6 @@ class CpPrinter(threading.Thread):
         self.local_buffer = []
         threading.Thread.__init__(self)
         
-    def get_queue_depth(self):
-        return self.data_buffer.qsize()
-      
     def run(self):
         self._target(*self._args)
         
@@ -65,12 +62,12 @@ class CpPrinter(threading.Thread):
         # Wait for print_handler to stop
         # Allow approx 5 sec. before forcing close on serial
         for i in range (0, 10):
-            if(self.printerBusy):
+            if self.printerBusy:
                 time.sleep(.5)
             else:
                 break
             
-        if(self.ser.isOpen()):
+        if self.ser.isOpen():
             try:
                 self.ser.close()
             except Exception, e:
@@ -78,7 +75,7 @@ class CpPrinter(threading.Thread):
     
     
     def printer_send(self, cmd):
-        if(CpDefs.LogVerbosePrinter):
+        if CpDefs.LogVerbosePrinter:
             print 'sending printer command ', cmd
         #self.__lock.acquire()
         #self.ser.write(cmd + '\r')
@@ -102,7 +99,7 @@ class CpPrinter(threading.Thread):
     def print_handler(self):
         
         
-        if(self.ser.isOpen()):
+        if self.ser.isOpen():
             self.ser.close()
         
         self.ser.open()
@@ -115,7 +112,7 @@ class CpPrinter(threading.Thread):
                 printer_command = self.commands.get(True)
                 self.commands.task_done()
                 self.printer_send(printer_command)
-                if(CpDefs.PrinterQueryStatus):
+                if CpDefs.PrinterQueryStatus:
                     self.printer_send(CpZplDefs.ZplPrinterQueryStatus)
                     self.process_response()
                 
@@ -135,18 +132,18 @@ class CpPrinter(threading.Thread):
         #While we have serial data process the buffer
         while(self.ser.inWaiting() > 0):
             # Sanity check for tight loop processing
-            if(self.closing):
+            if self.closing:
                 break
             
             temp_char = self.ser.read(1)
             
             # check for start of text
-            if(temp_char == CpAscii.STX):
+            if temp_char == CpAscii.STX:
                 temp_buffer = ""
                 continue
             
             # check for end of text
-            if(temp_char == CpAscii.ETX):
+            if temp_char == CpAscii.ETX:
                 # append to local buffer because we can
                 # receive multiple stx and etx per read
                 self.local_buffer.append(temp_buffer)
@@ -187,11 +184,6 @@ class CpPrinter(threading.Thread):
             self.data_buffer.task_done()
             
         return printer_data
-    
-    '''
-    def h2b(self, hex):
-        return int(hex,16)
-    '''       
                     
     def enqueue_command(self, cmd):
         try:
@@ -206,31 +198,25 @@ class CpPrinter(threading.Thread):
         self.printer_timeout = datetime.now() + timeout
     
     def is_timeout(self):
-        if(datetime.now() >= self.printer_timeout):
-            return True
-        else:
-            return False
+        return datetime.now() >= self.printer_timeout
     
     def is_error(self, token):        
-        if(token.find(CpPrinterResponses.TOKEN_ERROR) > -1):
-            return True
-        else:
-            return False
+        return token.find(CpPrinterResponses.TOKEN_ERROR) > -1
         
     def printer_parse_result(self, result):
         
         printer_result = CpPrinterResult()
         
-        if(result.find(CpPrinterResponses.TOKEN_OK) > -1):
+        if result.find(CpPrinterResponses.TOKEN_OK) > -1:
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode.RESULT_OK
-        elif(result.find(CpPrinterResponses.TOKEN_ERROR) > -1):
+        elif result.find(CpPrinterResponses.TOKEN_ERROR) > -1:
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode.RESULT_ERROR
-        elif(result.find(CpPrinterResponses.TOKEN_CONNECT) > -1):
+        elif result.find(CpPrinterResponses.TOKEN_CONNECT) > -1:
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode.RESULT_CONNECT   
-        elif(result.find(CpPrinterResponses.TOKEN_NOCARRIER) > -1):
+        elif result.find(CpPrinterResponses.TOKEN_NOCARRIER) > -1:
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode.RESULT_NOCARRIER
         else:
@@ -241,13 +227,12 @@ class CpPrinter(threading.Thread):
     def printer_send_at(self, callback):
         self.enqueue_command(CpPrinterDefs.CMD_AT)
         self.printerResponseCallbackFunc = callback
-        pass
    
-import sys, getopt
+import sys
+import getopt
  
 def printerDataReceived(data):
     print 'Callback function printerDataReceived ', data
-    pass
 
 def main(argv):
     
@@ -260,13 +245,12 @@ def main(argv):
         while True:
             time.sleep(.005)
     
-    
     print "running as console...\r\n"
     while True:
-        user_input = raw_input(">> ")
+        user_input = raw_input(">> ").tolower()
                 # Python 3 users
                 # input = input(">> ")
-        if user_input == 'exit' or user_input == 'EXIT':
+        if user_input == 'exit':
                 
             printerThread.shutdown_thread()
             
@@ -275,24 +259,37 @@ def main(argv):
                 
             print "Exiting app"
             break
+
         elif user_input == 'hoststatus':
             printerThread.enqueue_command(CpZplDefs.ZplHostQueryStatus)
+
         elif user_input == 'printerstatus':
             printerThread.enqueue_command(CpZplDefs.ZplPrinterQueryStatus)
+
         elif user_input == 'headdiagnostic':
             printerThread.enqueue_command(CpZplDefs.ZplQueryHeadDiagnostic)         
+
         elif user_input == 'aztec':
             printerThread.enqueue_command("^XA^BY8,0^FT124,209^BON,8,N,0,N,1,^FDYourTextHere^FS^XZ\r")
+
         elif user_input == 'test':
             in_file = file("PrestigeLabel.zpl", 'r')
             printerThread.enqueue_command(in_file.read())
             in_file.close()
+
         elif user_input == 'matrix':
             printerThread.enqueue_command("^XA^FO50,100^BXN,10,200^FDYourTextHere^FS^XZ\r")      
+
         elif user_input == 'qr':
             printerThread.enqueue_command("^XA^FO100,100^BQN,2,10^FDYourTextHere^FS^XZ\r")        
-        else:
-            pass
+
+        elif user_input[0] == '~':
+            # Let's the user send commands to the printer directly
+            print '**WARNING** Commands are sent directly to printer. You better know what you are doing.'
+            command = raw_input('Enter command: ').tolower()
+            if command == "" or command == "exit":
+                continue
+            printerThread.enqueue_command(command)
 
         time.sleep(.5)
 
