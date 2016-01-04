@@ -28,15 +28,15 @@ class CpPrinterState:
 
     key = CpStateKey
 
-    INITIALIZE = {key.NUMBER:0, key.NAME:'INITIALIZE', key.TIMEOUT:5,  key.FUNCTION:CpPrinterService.inet_init}
-    IDLE       = {key.NUMBER:1, key.NAME:'IDLE',       key.TIMEOUT:30, key.FUNCTION:CpPrinterService.inet_idle}
-    CONNECT    = {key.NUMBER:2, key.NAME:'CONNECT',    key.TIMEOUT:5,  key.FUNCTION:CpPrinterService.inet_connect}
-    CLOSE      = {key.NUMBER:3, key.NAME:'CLOSE',      key.TIMEOUT:0,  key.FUNCTION:CpPrinterService.inet_close}
-    SLEEP      = {key.NUMBER:4, key.NAME:'SLEEP',      key.TIMEOUT:30, key.FUNCTION:CpPrinterService.inet_sleep}
-    SEND       = {key.NUMBER:5, key.NAME:'SEND',       key.TIMEOUT:5,  key.FUNCTION:CpPrinterService.inet_send}
-    RECEIVE    = {key.NUMBER:7, key.NAME:'RECEIVE',    key.TIMEOUT:10, key.FUNCTION:CpPrinterService.inet_receive}
-    HEARTBEAT  = {key.NUMBER:8, key.NAME:'HEARTBEAT',  key.TIMEOUT:5,  key.FUNCTION:CpPrinterService.inet_heartbeat}
-    WAITNETWORKINTERFACE = {key.NUMBER:6, key.NAME:'WAITNETWORKINTERFACE', key.TIMEOUT:120, key.FUNCTION:CpPrinterService.waitnetworkinterface}
+    INITIALIZE = {key.NUMBER:0, key.NAME:'INITIALIZE', key.TIMEOUT:5}
+    IDLE       = {key.NUMBER:1, key.NAME:'IDLE',       key.TIMEOUT:30}
+    CONNECT    = {key.NUMBER:2, key.NAME:'CONNECT',    key.TIMEOUT:5}
+    CLOSE      = {key.NUMBER:3, key.NAME:'CLOSE',      key.TIMEOUT:0}
+    SLEEP      = {key.NUMBER:4, key.NAME:'SLEEP',      key.TIMEOUT:30}
+    SEND       = {key.NUMBER:5, key.NAME:'SEND',       key.TIMEOUT:5}
+    RECEIVE    = {key.NUMBER:7, key.NAME:'RECEIVE',    key.TIMEOUT:10}
+    HEARTBEAT  = {key.NUMBER:8, key.NAME:'HEARTBEAT',  key.TIMEOUT:5}
+    WAITNETWORKINTERFACE = {key.NUMBER:6, key.NAME:'WAITNETWORKINTERFACE', key.TIMEOUT:120}
 
 class CpInetResultCode:
     RESULT_UNKNOWN = 0
@@ -139,15 +139,15 @@ class CpPrinterService(threading.Thread):
 
         self.ack_queue = Queue.Queue(128)
 
-        # self.fmap = {0:self.inet_init,
-                     # 1:self.inet_idle,
-                     # 2:self.inet_connect,
-                     # 3:self.inet_close,
-                     # 4:self.inet_sleep,
-                     # 5:self.inet_send,
-                     # 6:self.inet_waitnetworkinterface,
-                     # 7:self.inet_receive,
-                     # 8:self.inet_heartbeat}
+        self.fmap = {0:self.inet_init,
+                     1:self.inet_idle,
+                     2:self.inet_connect,
+                     3:self.inet_close,
+                     4:self.inet_sleep,
+                     5:self.inet_send,
+                     6:self.inet_waitnetworkinterface,
+                     7:self.inet_receive,
+                     8:self.inet_heartbeat}
 
         self.printerThread = printerThread
 
@@ -163,8 +163,7 @@ class CpPrinterService(threading.Thread):
             but will enter once the current state function has returned.
         """
         self.current_state = new_state
-        # self.STATEFUNC = self.fmap[self.current_state[CpStateKey.NUMBER]]
-        self.STATEFUNC = self.current_state[CpStateKey.FUNCTION]
+        self.STATEFUNC = self.fmap[self.current_state[CpStateKey.NUMBER]]
         self.timestamp = datetime.now()
         self.timeout = self.current_state[CpStateKey.TIMEOUT]
 
