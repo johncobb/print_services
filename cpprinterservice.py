@@ -15,6 +15,9 @@ class CpStateKey:
     NAME = 'name'
     TIMEOUT = 'timeout'
 
+def func:
+    pass
+
 class CpPrinterState:
     """
     States are represented as dictionaries with the following attributes:
@@ -24,7 +27,7 @@ class CpPrinterState:
         CpStateKey.TIMEOUT => The state's timeout value in seconds
     """
 
-    INITIALIZE = {CpStateKey.NUMBER:0, CpStateKey.NAME:'INITIALIZE', CpStateKey.TIMEOUT:5}
+    INITIALIZE = {CpStateKey.NUMBER:0, CpStateKey.NAME:'INITIALIZE', CpStateKey.TIMEOUT:5, CpStateKey.FUNCTION:CpPrinterService.inet_init}
     IDLE       = {CpStateKey.NUMBER:1, CpStateKey.NAME:'IDLE',       CpStateKey.TIMEOUT:30}
     CONNECT    = {CpStateKey.NUMBER:2, CpStateKey.NAME:'CONNECT',    CpStateKey.TIMEOUT:5}
     CLOSE      = {CpStateKey.NUMBER:3, CpStateKey.NAME:'CLOSE',      CpStateKey.TIMEOUT:0}
@@ -124,7 +127,6 @@ class CpPrinterService(threading.Thread):
         self.inetError = CpInetError()
         self.exponential_backoff = 30
         self.log = CpLog()
-        self.state_cb = None
         self.waitRetryBackoff = {1:5, 2:15, 3:30}
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
@@ -153,18 +155,6 @@ class CpPrinterService(threading.Thread):
     def run(self):
         self._target(*self._args)
 
-    def get_queue_depth(self):
-        return self.commands.qsize()
-
-    def get_current_state(self):
-        return self.current_state[CpStateKey.NAME]
-
-    def get_inet_stats(self):
-        return self.inet_stats
-
-    def setStateChangedCallback(self, callback):
-        self.state_cb = callback
-
     def enter_state(self, new_state):
         """
             Sets the next state to new_state
@@ -178,14 +168,6 @@ class CpPrinterService(threading.Thread):
 
         if CpDefs.LogVerboseInet:
             print 'enter_state: (', self.current_state[CpStateKey.NAME], ')'
-
-        # Set the led pattern via state_cb
-        # Hack if statement to prevent state_cb from being called before
-        # setStateChangedCallback is set by cptaskmanager
-        if self.state_cb == None:
-            return
-        else:
-            self.state_cb(new_state)
 
     def state_timedout(self):
         if (datetime.now() - self.timestamp).seconds >= self.timeout:
