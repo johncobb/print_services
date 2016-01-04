@@ -151,8 +151,7 @@ class CpPrinterService(threading.Thread):
         self.remoteIp = None
         self.initialized = False
         self.current_state = CpPrinterState.INITIALIZE
-        self.inetError = CpInetError()
-        self.exponential_backoff = 30
+        self.inet_error = CpInetError()
         self.log = CpLog()
         self.waitRetryBackoff = {1:5, 2:15, 3:30}
         self.inet_stats = CpInetStats()
@@ -186,19 +185,19 @@ class CpPrinterService(threading.Thread):
     def enter_state(self, new_state):
         """
             Sets the next state to new_state
-            A call to this will not immediately change the state, but
-            but will enter once the current state function has returned.
+            A call to this will not immediately change state. The next
+            state will execute upon return from the current state.
         """
         self.current_state = new_state
         self.STATEFUNC = self.fmap[self.current_state[CpStateKey.NUMBER]]
-        self.timestamp = datetime.now()
+        self.begin_state_time = datetime.now()
         self.timeout = self.current_state[CpStateKey.TIMEOUT]
 
         if CpDefs.LogVerboseInet:
             print 'enter_state: (', self.current_state[CpStateKey.NAME], ')'
 
     def state_timedout(self):
-        if (datetime.now() - self.timestamp).seconds >= self.timeout:
+        if (datetime.now() - self.begin_state_time).seconds >= self.timeout:
 
             if CpDefs.LogVerboseInet:
                 print 'state_timeout: (', self.current_state[CpStateKey.NAME], ')'
@@ -208,7 +207,7 @@ class CpPrinterService(threading.Thread):
             return False
 
     def reset_state_timeout(self):
-        self.timestamp = datetime.now()
+        self.begin_state_time = datetime.now()
 
     def inet_init(self):
         try:
@@ -284,8 +283,7 @@ class CpPrinterService(threading.Thread):
                 self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
 
         except socket.error, e:
-            err = e.args[0]
-            if err == 'timed out':
+            if e.args[0] == 'timed out':
                 result.ResultCode = CpInetResultCode.RESULT_SCKTIMEOUT
                 print 'socket timeout waiting for job'
             else:
@@ -345,6 +343,8 @@ class CpPrinterService(threading.Thread):
             return
 
     def inet_send(self):
+        """
+        """
 
         # Allow the connected state to wait at least 30s before
         # going to idle. This will keep us from bouncing between
@@ -452,18 +452,15 @@ class CpPrinterService(threading.Thread):
         self.__lock.release()
 
     def handle_inet_init_error(self):
-
-        # ******** BEGIN ERROR HANDLING ********
-
         # If we get this far we received an error
-        self.inetError.InitializeErrors += 1
+        self.inet_error.InitializeErrors += 1
         # Updated Statistics
         self.inet_stats.InitErrors += 1
 
-        if self.inetError.InitializeErrors > self.inetError.InitializeMax:
+        if self.inet_error.InitializeErrors > self.inet_error.InitializeMax:
             print 'Max Initialize Errors'
             # Reset Error Counter
-            self.inetError.InitializeErrors = 0
+            self.inet_error.InitializeErrors = 0
             # Handle Max Errors
             # TODO: TEST BEFORE PROD
 
@@ -477,33 +474,26 @@ class CpPrinterService(threading.Thread):
             return False
 
         # Allow some settle time before trying again
-        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inetError.InitializeErrors]
-        time.sleep(self.waitRetryBackoff[self.inetError.InitializeErrors])
-
-        # ******** END ERROR HANDLING ********
-
-
+        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.InitializeErrors]
+        time.sleep(self.waitRetryBackoff[self.inet_error.InitializeErrors])
 
     def handle_inet_connect_error(self):
-
-        # ******** BEGIN ERROR HANDLING ********
-
-        self.inetError.ConnectErrors += 1
+        self.inet_error.ConnectErrors += 1
 
         # Updated Statistics
         self.inet_stats.ConnectErrors += 1
 
         print 'CONNECT FAILED'
 
-        if self.inetError.ConnectErrors > self.inetError.ConnectMax:
+        if self.inet_error.ConnectErrors > self.inet_error.ConnectMax:
             # Handle Max Errors
-            self.inetError.ConnectErrors = 0
+            self.inet_error.ConnectErrors = 0
             self.enter_state(CpPrinterState.INITIALIZE)
             return False
 
         # Allow some settle time before trying again
-        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inetError.ConnectErrors]
-        time.sleep(self.waitRetryBackoff[self.inetError.ConnectErrors])
+        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.ConnectErrors]
+        time.sleep(self.waitRetryBackoff[self.inet_error.ConnectErrors])
 
         # ******** END ERROR HANDLING ********
 
@@ -513,24 +503,24 @@ class CpPrinterService(threading.Thread):
 
         # ******** BEGIN ERROR HANDLING ********
 
-        self.inetError.SendErrors += 1
+        self.inet_error.SendErrors += 1
 
         # Updated Statistics
         self.inet_stats.SendErrors += 1
 
         print 'SEND FAILED'
 
-        if self.inetError.SendErrors > self.inetError.SendMax:
+        if self.inet_error.SendErrors > self.inet_error.SendMax:
             # We have exceeded the maximum allowable attempts so
             # close and reinitialize the connection
-            self.inetError.SendErrors = 0
+            self.inet_error.SendErrors = 0
             self.inet_close()
             self.enter_state(CpPrinterState.INITIALIZE)
             return False
 
         # Allow some settle time before trying again
-        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inetError.SendErrors]
-        time.sleep(self.waitRetryBackoff[self.inetError.SendErrors])
+        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.SendErrors]
+        time.sleep(self.waitRetryBackoff[self.inet_error.SendErrors])
 
         # ******** END ERROR HANDLING ********
 
