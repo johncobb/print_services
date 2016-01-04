@@ -28,15 +28,41 @@ class CpPrinterState:
 
     key = CpStateKey
 
-    INITIALIZE = {key.NUMBER:0, key.NAME:'INITIALIZE', key.TIMEOUT:5}
-    IDLE       = {key.NUMBER:1, key.NAME:'IDLE',       key.TIMEOUT:30}
-    CONNECT    = {key.NUMBER:2, key.NAME:'CONNECT',    key.TIMEOUT:5}
-    CLOSE      = {key.NUMBER:3, key.NAME:'CLOSE',      key.TIMEOUT:0}
-    SLEEP      = {key.NUMBER:4, key.NAME:'SLEEP',      key.TIMEOUT:30}
-    SEND       = {key.NUMBER:5, key.NAME:'SEND',       key.TIMEOUT:5}
-    RECEIVE    = {key.NUMBER:7, key.NAME:'RECEIVE',    key.TIMEOUT:10}
-    HEARTBEAT  = {key.NUMBER:8, key.NAME:'HEARTBEAT',  key.TIMEOUT:5}
-    WAITNETWORKINTERFACE = {key.NUMBER:6, key.NAME:'WAITNETWORKINTERFACE', key.TIMEOUT:120}
+    INITIALIZE = {key.NUMBER:0,
+                  key.NAME:'INITIALIZE',
+                  key.TIMEOUT:5}
+
+    IDLE       = {key.NUMBER:1,
+                  key.NAME:'IDLE',
+                  key.TIMEOUT:30}
+
+    CONNECT    = {key.NUMBER:2,
+                  key.NAME:'CONNECT',
+                  key.TIMEOUT:5}
+
+    CLOSE      = {key.NUMBER:3,
+                  key.NAME:'CLOSE',
+                  key.TIMEOUT:0}
+
+    SLEEP      = {key.NUMBER:4,
+                  key.NAME:'SLEEP',
+                  key.TIMEOUT:30}
+
+    SEND       = {key.NUMBER:5,
+                  key.NAME:'SEND',
+                  key.TIMEOUT:5}
+
+    RECEIVE    = {key.NUMBER:7,
+                  key.NAME:'RECEIVE',
+                  key.TIMEOUT:10}
+
+    HEARTBEAT  = {key.NUMBER:8,
+                  key.NAME:'HEARTBEAT',
+                  key.TIMEOUT:5}
+
+    WAITNETWORKINTERFACE = {key.NUMBER:6,
+                            key.NAME:'WAITNETWORKINTERFACE',
+                            key.TIMEOUT:120}
 
 class CpInetResultCode:
     RESULT_UNKNOWN = 0
@@ -137,6 +163,7 @@ class CpPrinterService(threading.Thread):
         self.heartbeat_ack_pending = False
         self.last_heartbeat_time = time.time()
 
+        #Contains pending acks for print commands
         self.ack_queue = Queue.Queue(128)
 
         self.fmap = {0:self.inet_init,
@@ -225,7 +252,9 @@ class CpPrinterService(threading.Thread):
         #If the ack timeout is reached the thread should be recreated
         #This usually signifies a lost internet connection
         heartbeat_elapsed = time.time() - self.last_heartbeat_time
-        if self.heartbeat_ack_pending and heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME:
+        if (self.heartbeat_ack_pending and
+            heartbeat_elapsed >= CpInetDefs.INET_HEARTBEAT_ACK_TIME):
+
             self.last_heartbeat_time = 0
             if CpDefs.LogVerboseInet:
                 print "Heartbeat ack not received"
@@ -687,18 +716,6 @@ class CpPrinterService(threading.Thread):
 
         return inet_result
 
-
-    def inet_test(self):
-        try:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.connect((self.remoteIp, self.port))
-            self.sock.shutdown(socket.SHUT_RDWR)
-            self.sock.close()
-            return True
-        except:
-            self.log.logError('inet_test:')
-            return False
-
     def watchdog_set_status(self, status):
 
         '''
@@ -725,11 +742,7 @@ class CpPrinterService(threading.Thread):
 
 def printerDataReceived(data):
     print 'Callback function printerDataReceived ', data
-    pass
 
-def inetDataReceived(data):
-    #print 'Callback function inetDataReceived ', data
-    pass
 
 if __name__ == '__main__':
 

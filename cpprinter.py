@@ -237,21 +237,11 @@ class CpPrinter(threading.Thread):
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode        
             return printer_result
-            
-    
-    def printer_init(self):
-        pass
-
-    
-    def printer_reset(self):
-        pass
 
     def printer_send_at(self, callback):
         self.enqueue_command(CpPrinterDefs.CMD_AT)
         self.printerResponseCallbackFunc = callback
         pass
-    
-   
    
 import sys, getopt
  
