@@ -8,12 +8,7 @@ class CpInetStats:
     SendErrors = 0
     Naks = 0
     LastSent = time.gmtime(0) # Epoch
-   
+
 class CpRfStats:
     RfErrors = 0
     RfReceived = 0
-    
-
-    
-    
-    

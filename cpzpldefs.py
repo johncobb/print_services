@@ -3,7 +3,7 @@ class CpZplDefs:
     ZplPrinterSleep = "^ZZ" # model dependent
     ZplQueryHeadDiagnostic = "~HD"
     ZplHostRamStatus = "~HM"
-    ZplHostIdentification = "~HI" 
+    ZplHostIdentification = "~HI"
     ZplPrinterQueryStatus = "~HQES" # see table 13-14 p.225
     ZplHostQueryMaintenanceAlertSettings = "~HQMA"
     ZplHostQueryMaintenanceInformation = "~HQMI"

@@ -150,7 +150,7 @@ class CpPrinterService(threading.Thread):
         self._args = args
         self.__lock = threading.Lock()
         self.closing = False # A flag to indicate thread shutdown
-        self.commands = Queue.Queue(32)
+        self.commands = Queue.Queue(32) # Commands for this script to handle
         self.inetResponseCallbackFunc = inetResponseCallbackFunc
         self.host = CpInetDefs.INET_HOST
         self.port = CpInetDefs.INET_PORT

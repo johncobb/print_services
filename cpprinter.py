@@ -36,7 +36,7 @@ class CpPrinter(threading.Thread):
         self._args = args
         self.__lock = threading.Lock()
         self.closing = False # A flag to indicate thread shutdown
-        self.commands = Queue.Queue(128)
+        self.printer_commands = Queue.Queue(128)
         self.data_buffer = Queue.Queue(128)
         self.printer_timeout = 0
         self.printerResponseCallbackFunc = printerResponseCallbackFunc
@@ -108,9 +108,9 @@ class CpPrinter(threading.Thread):
         
         while not self.closing:
             
-            if (self.commands.qsize() > 0):
-                printer_command = self.commands.get(True)
-                self.commands.task_done()
+            if self.printer_commands.qsize() > 0:
+                printer_command = self.printer_commands.get(True)
+                self.printer_commands.task_done()
                 self.printer_send(printer_command)
                 if CpDefs.PrinterQueryStatus:
                     self.printer_send(CpZplDefs.ZplPrinterQueryStatus)
@@ -179,7 +179,7 @@ class CpPrinter(threading.Thread):
         # qsize() before calling queue_get()
         printer_data = "\x00"
         
-        if (self.data_buffer.qsize() > 0):
+        if self.data_buffer.qsize() > 0:
             printer_data = self.data_buffer.get(True)
             self.data_buffer.task_done()
             
@@ -188,14 +188,11 @@ class CpPrinter(threading.Thread):
     def enqueue_command(self, cmd):
         try:
             self.printerBusy = True
-            self.commands.put(cmd, block=True, timeout=1)
+            self.printer_commands.put(cmd, block=True, timeout=1)
         except:
             self.__lock.acquire()
             print "The Printer queue is full"
             self.__lock.release()
-    
-    def set_timeout(self, timeout):
-        self.printer_timeout = datetime.now() + timeout
     
     def is_timeout(self):
         return datetime.now() >= self.printer_timeout
@@ -210,15 +207,19 @@ class CpPrinter(threading.Thread):
         if result.find(CpPrinterResponses.TOKEN_OK) > -1:
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode.RESULT_OK
+
         elif result.find(CpPrinterResponses.TOKEN_ERROR) > -1:
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode.RESULT_ERROR
+
         elif result.find(CpPrinterResponses.TOKEN_CONNECT) > -1:
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode.RESULT_CONNECT   
+
         elif result.find(CpPrinterResponses.TOKEN_NOCARRIER) > -1:
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode.RESULT_NOCARRIER
+
         else:
             printer_result.Data = result
             printer_result.ResultCode = CpPrinterResultCode        
