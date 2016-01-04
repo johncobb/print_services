@@ -14,28 +14,29 @@ class CpStateKey:
     NUMBER = 'number'
     NAME = 'name'
     TIMEOUT = 'timeout'
-
-def func:
-    pass
+    FUNCTION = 'function'
 
 class CpPrinterState:
     """
     States are represented as dictionaries with the following attributes:
-        CpStateKey.NUMBER  => The State's number. Used as identification
-        CpStateKey.NAME    => The string representation of the state. Only used for
-                       debugging purposes
-        CpStateKey.TIMEOUT => The state's timeout value in seconds
+        CpStateKey.NUMBER   => The State's number. Used as identification
+        CpStateKey.NAME     => The string representation of the state. Only used for
+                               debugging purposes
+        CpStateKey.TIMEOUT  => The state's timeout value in seconds
+        CpStateKey.FUNCTION => The state's function
     """
 
-    INITIALIZE = {CpStateKey.NUMBER:0, CpStateKey.NAME:'INITIALIZE', CpStateKey.TIMEOUT:5, CpStateKey.FUNCTION:CpPrinterService.inet_init}
-    IDLE       = {CpStateKey.NUMBER:1, CpStateKey.NAME:'IDLE',       CpStateKey.TIMEOUT:30}
-    CONNECT    = {CpStateKey.NUMBER:2, CpStateKey.NAME:'CONNECT',    CpStateKey.TIMEOUT:5}
-    CLOSE      = {CpStateKey.NUMBER:3, CpStateKey.NAME:'CLOSE',      CpStateKey.TIMEOUT:0}
-    SLEEP      = {CpStateKey.NUMBER:4, CpStateKey.NAME:'SLEEP',      CpStateKey.TIMEOUT:30}
-    SEND       = {CpStateKey.NUMBER:5, CpStateKey.NAME:'SEND',       CpStateKey.TIMEOUT:5}
-    RECEIVE    = {CpStateKey.NUMBER:7, CpStateKey.NAME:'RECEIVE',    CpStateKey.TIMEOUT:10}
-    HEARTBEAT  = {CpStateKey.NUMBER:8, CpStateKey.NAME:'HEARTBEAT',  CpStateKey.TIMEOUT:5}
-    WAITNETWORKINTERFACE = {CpStateKey.NUMBER:6, CpStateKey.NAME:'WAITNETWORKINTERFACE', CpStateKey.TIMEOUT:120}
+    key = CpStateKey
+
+    INITIALIZE = {key.NUMBER:0, key.NAME:'INITIALIZE', key.TIMEOUT:5,  key.FUNCTION:CpPrinterService.inet_init}
+    IDLE       = {key.NUMBER:1, key.NAME:'IDLE',       key.TIMEOUT:30, key.FUNCTION:CpPrinterService.inet_idle}
+    CONNECT    = {key.NUMBER:2, key.NAME:'CONNECT',    key.TIMEOUT:5,  key.FUNCTION:CpPrinterService.inet_connect}
+    CLOSE      = {key.NUMBER:3, key.NAME:'CLOSE',      key.TIMEOUT:0,  key.FUNCTION:CpPrinterService.inet_close}
+    SLEEP      = {key.NUMBER:4, key.NAME:'SLEEP',      key.TIMEOUT:30, key.FUNCTION:CpPrinterService.inet_sleep}
+    SEND       = {key.NUMBER:5, key.NAME:'SEND',       key.TIMEOUT:5,  key.FUNCTION:CpPrinterService.inet_send}
+    RECEIVE    = {key.NUMBER:7, key.NAME:'RECEIVE',    key.TIMEOUT:10, key.FUNCTION:CpPrinterService.inet_receive}
+    HEARTBEAT  = {key.NUMBER:8, key.NAME:'HEARTBEAT',  key.TIMEOUT:5,  key.FUNCTION:CpPrinterService.inet_heartbeat}
+    WAITNETWORKINTERFACE = {key.NUMBER:6, key.NAME:'WAITNETWORKINTERFACE', key.TIMEOUT:120, key.FUNCTION:CpPrinterService.waitnetworkinterface}
 
 class CpInetResultCode:
     RESULT_UNKNOWN = 0
@@ -138,15 +139,15 @@ class CpPrinterService(threading.Thread):
 
         self.ack_queue = Queue.Queue(128)
 
-        self.fmap = {0:self.inet_init,
-                     1:self.inet_idle,
-                     2:self.inet_connect,
-                     3:self.inet_close,
-                     4:self.inet_sleep,
-                     5:self.inet_send,
-                     6:self.inet_waitnetworkinterface,
-                     7:self.inet_receive,
-                     8:self.inet_heartbeat}
+        # self.fmap = {0:self.inet_init,
+                     # 1:self.inet_idle,
+                     # 2:self.inet_connect,
+                     # 3:self.inet_close,
+                     # 4:self.inet_sleep,
+                     # 5:self.inet_send,
+                     # 6:self.inet_waitnetworkinterface,
+                     # 7:self.inet_receive,
+                     # 8:self.inet_heartbeat}
 
         self.printerThread = printerThread
 
@@ -162,7 +163,8 @@ class CpPrinterService(threading.Thread):
             but will enter once the current state function has returned.
         """
         self.current_state = new_state
-        self.STATEFUNC = self.fmap[self.current_state[CpStateKey.NUMBER]]
+        # self.STATEFUNC = self.fmap[self.current_state[CpStateKey.NUMBER]]
+        self.STATEFUNC = self.current_state[CpStateKey.FUNCTION]
         self.timestamp = datetime.now()
         self.timeout = self.current_state[CpStateKey.TIMEOUT]
 
