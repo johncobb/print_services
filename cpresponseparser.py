@@ -75,7 +75,7 @@ class CpResponseParser():
             nibble = error_nibbles[idx]
             if nibble is "0":
                 continue
-            error_list.append(PrinterErrorCodes.NIBBLES[int(nibble)])
+            error_list.append(PrinterErrorCodes.NIBBLES[idx][int(nibble)])
 
         return error_list
 
