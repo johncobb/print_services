@@ -77,10 +77,10 @@ class CpPrinter(threading.Thread):
     def printer_send(self, cmd):
         if CpDefs.LogVerbosePrinter:
             print 'sending printer command ', cmd
-        print "Wrote: ", self.ser.write(cmd)
+        # self.ser.write(cmd)
+        # print "Wrote to printer: ", cmd
         print "Printing Responses:"
         self.ser.write("~HQES")
-        self.ser.write("~HQMI")
         for response in self.process_response():
             print "Response: ", response
         
