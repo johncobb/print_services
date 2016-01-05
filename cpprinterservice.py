@@ -289,7 +289,7 @@ class CpPrinterService(threading.Thread):
             printer_commands = self.accumulate_commands(reply)
 
             for command in printer_commands:
-                if command == CpInetDefs.GET_PRINTER_RESPONSE:
+                if command == CpInetDefs.INET_GET_PRINTER_RESPONSE:
                     pass
                 else:
                     self.printerThread.enqueue_command(command)
