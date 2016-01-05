@@ -2,6 +2,7 @@ import threading
 import time
 import Queue
 import serial
+from cpresponseparser import CpResponseParser
 from cpdefs import CpDefs
 from cpdefs import CpAscii
 from cpzpldefs import CpZplDefs
@@ -48,6 +49,8 @@ class CpPrinter(threading.Thread):
         # onto the next 0x00 found. This is our first full message
         self.ser = serial.Serial(CpDefs.PrinterPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
         self.local_buffer = []
+
+        self.response_parser = CpResponseParser()
         threading.Thread.__init__(self)
         
     def run(self):
@@ -82,31 +85,10 @@ class CpPrinter(threading.Thread):
         self.ser.write("~HQES")
         for response in self.process_response():
             if "PRINTER STATUS" in response:
-                self.parse_printer_status(response)
+                self.response_parser.parse_printer_status(response)
             else:
                 print "Response: ", response
 
-    def parse_printer_status(self, response):
-        """
-            This function takes the printer's response to the
-            ~HQES command and determines which errors/warnings have
-            been encountered.
-        """
-        print "parse_printer_status"
-        lines = response.splitlines()
-        for line in lines:
-            if "ERROR" in line:
-                errors = line
-            elif "WARNING" in line:
-                warnings = line
-
-        errors = (errors.split())[1:]
-        warnings = (warnings.split())[1:]
-        for err in errors:
-            print "Error Str: ", err
-
-        for warning in warnings:
-            print "Warning Str: ", warning
         
     def print_handler(self):
         """
