@@ -1,4 +1,11 @@
 class PrinterErrorCodes:
+    """
+        NIBBLES is a dict mapping the "Nibble Number" as
+        defined in the ZPL documentation Page 225 to a 
+        dictionary mapping nibble value to it's error
+        condition.
+    """
+    # TODO: Make this more intuitive
     NIBBLES = {3:{0:"",
                   1:"Invalid Firmware Config",
                   2:"Printhead Thermistor Open"},
@@ -76,6 +83,7 @@ class CpResponseParser():
             nibble = error_nibbles[idx]
             if nibble is "0":
                 continue
+            # TODO: Fix this formatting. It's awful
             error_list.append(PrinterErrorCodes.NIBBLES[nibble_number][int(nibble)])
 
         return error_list
