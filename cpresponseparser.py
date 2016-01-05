@@ -72,10 +72,11 @@ class CpResponseParser():
         error_list = []
         error_nibbles = errors[2]
         for idx in range(len(error_nibbles)):
+            nibble_number = 8 - idx
             nibble = error_nibbles[idx]
             if nibble is "0":
                 continue
-            error_list.append(PrinterErrorCodes.NIBBLES[idx][int(nibble)])
+            error_list.append(PrinterErrorCodes.NIBBLES[nibble_number][int(nibble)])
 
         return error_list
 
