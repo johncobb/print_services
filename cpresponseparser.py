@@ -1,3 +1,21 @@
+class PrinterErrorCodes:
+    NIBBLES = {3:{0:"",
+                  1:"Invalid Firmware Config",
+                  2:"Printhead Thermistor Open"},
+
+               2:{0:"",
+                  1:"Printhead Over Temperature",
+                  2:"Motor Over Temperature",
+                  4:"Bad Printhead Element",
+                  8:"Printhead Detection Error"},
+
+               1:{0:"",
+                  1:"Media Out",
+                  2:"Ribbon Out",
+                  4:"Head Open",
+                  8:"Cutter Fault"}
+               }
+
 class CpResponseParser():
     def __init__(self):
         self.current_errors = []
@@ -29,10 +47,8 @@ class CpResponseParser():
             elif "WARNING" in line:
                 warnings = line
 
-        print "errors: ", errors
-        print "warnings: ", warnings
-
-        # self.current_errors = parse_errors(errors)
+        self.current_errors = self.parse_errors(errors)
+        print self.current_errors
         # self.current_warnings = parse_warnings(warnings)
 
     def parse_errors(self, error_str):
@@ -54,11 +70,14 @@ class CpResponseParser():
             return []
 
         error_list = []
-        error_flags = errors[2]
-        error_nibble_one = {1:"Media Out",
-                            2:"Ribbon Out",
-                            4:"Head Open",
-                            8:"Cutter Fault"}
+        error_nibbles = errors[2]
+        for idx in range(len(error_nibbles))
+            nibble = error_nibbles[idx]
+            if nibble is "0":
+                continue
+            error_list.append(PrinterErrorCodes[int(nibble)])
+
+        return error_list
 
     def parse_warnings(self, warnings):
         pass
