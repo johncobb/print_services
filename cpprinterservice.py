@@ -622,7 +622,7 @@ class CpPrinterService(threading.Thread):
             elif line == CpInetResponses.TOKEN_TCPHBACK:
                 self.heartbeat_ack_pending = False
 
-            elif line == CpInetDefs.GET_PRINTER_RESPONSE:
+            elif line == CpInetDefs.INET_GET_PRINTER_RESPONSE:
                 commands.append(line)
                 self.printer_command_buffer = ""
 
