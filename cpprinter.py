@@ -79,7 +79,6 @@ class CpPrinter(threading.Thread):
             print 'sending printer command ', cmd
         # self.ser.write(cmd)
         # print "Wrote to printer: ", cmd
-        print "Printing Responses:"
         self.ser.write("~HQES")
         for response in self.process_response():
             if "PRINTER STATUS" in response:
@@ -95,13 +94,15 @@ class CpPrinter(threading.Thread):
         """
         print "parse_printer_status"
         lines = response.splitlines()
-        warnings = (response[2].split())[1:]
-        for warning in warnings:
-            print "Warning Line: ", warning
+        for line in lines:
+            print "Line: ", line
+        # warnings = (response[2].split())[1:]
+        # for warning in warnings:
+            # print "Warning Line: ", warning
 
-        errors = (response[2].split())[1:]
-        for error in errors:
-            print "Error Line: ", error
+        # errors = (response[2].split())[1:]
+        # for error in errors:
+            # print "Error Line: ", error
         
     def print_handler(self):
         """
