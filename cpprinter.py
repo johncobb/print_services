@@ -95,7 +95,7 @@ class CpPrinter(threading.Thread):
         print "parse_printer_status"
         lines = response.splitlines()
 
-        errors = response[3].split())
+        errors = response[3].split()
         for error in errors:
             print "Error Word: ", error
 
