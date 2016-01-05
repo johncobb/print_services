@@ -100,8 +100,13 @@ class CpPrinter(threading.Thread):
             elif "WARNING" in line:
                 warnings = line
 
-        print "Error Line: ", errors
-        print "Warning Line: ", warnings
+        errors = (errors.split())[1:]
+        warnings = (warnings.split())[1:]
+        for err in errors:
+            print "Error Str: ", err
+
+        for warning in warnings:
+            print "Warning Str: ", warning
         
     def print_handler(self):
         """
@@ -166,19 +171,6 @@ class CpPrinter(threading.Thread):
 
         return self.local_buffer
                 
-        # parse the local_local buffer to determine ack or nak
-        # example result:
-        # PRINTER STATUS
-        #    ERRORS:   1 00000000 0000000B
-        #    WARNINGS: 0 00000000 00000000
-            
-#         tuples = self.local_buffer.split()
-#         
-#         if(tuples >= 6):
-#             print tuples[2], tuples[3], tuples[4], tuples[5]
-        #end parse local variable
-        
-             
     def enqueue_printer(self, cmd):
         try:
             self.data_buffer.put(cmd, block=True, timeout=1)
