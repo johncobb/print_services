@@ -94,15 +94,14 @@ class CpPrinter(threading.Thread):
         """
         print "parse_printer_status"
         lines = response.splitlines()
-        for line in lines:
-            print "Line: ", line
-        # warnings = (response[2].split())[1:]
-        # for warning in warnings:
-            # print "Warning Line: ", warning
 
-        # errors = (response[2].split())[1:]
-        # for error in errors:
-            # print "Error Line: ", error
+        errors = (response[3].split())[1:]
+        for error in errors:
+            print "Error Line: ", error
+
+        warnings = (response[4].split())[1:]
+        for warning in warnings:
+            print "Warning Line: ", warning
         
     def print_handler(self):
         """
