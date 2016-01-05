@@ -85,15 +85,15 @@ class CpPrinter(threading.Thread):
             print "Response: ", response
         
     def print_handler(self):
-    """
-        method: print_handler
-        1. Open serial port
-        2. process local printer commands
-        3. accumulate characters over serial port
-        4. check for new message indicator (0x00)
-        5. enqueue new message
-        6. reset the buffer
-    """
+        """
+            method: print_handler
+            1. Open serial port
+            2. process local printer commands
+            3. accumulate characters over serial port
+            4. check for new message indicator (0x00)
+            5. enqueue new message
+            6. reset the buffer
+        """
         if self.ser.isOpen():
             self.ser.close()
         
