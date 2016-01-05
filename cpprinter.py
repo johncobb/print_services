@@ -80,7 +80,7 @@ class CpPrinter(threading.Thread):
         # self.ser.write(cmd)
         # print "Wrote to printer: ", cmd
         print "Printing Responses:"
-        # self.ser.write("~HQES")
+        self.ser.write("~HQES")
         for response in self.process_response():
             print "Response: ", response
 
