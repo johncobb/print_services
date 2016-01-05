@@ -83,7 +83,7 @@ class CpPrinter(threading.Thread):
         self.ser.write("~HQES")
         for response in self.process_response():
             if "PRINTER STATUS" in response:
-                parse_printer_status(response)
+                self.parse_printer_status(response)
             else:
                 print "Response: ", response
 
