@@ -82,7 +82,10 @@ class CpPrinter(threading.Thread):
         print "Printing Responses:"
         self.ser.write("~HQES")
         for response in self.process_response():
-            print "Response: ", response
+            if "PRINTER STATUS" in response:
+                parse_printer_status(response)
+            else:
+                print "Response: ", response
 
     def parse_printer_status(self, response):
         """
@@ -90,8 +93,14 @@ class CpPrinter(threading.Thread):
             ~HQES command and determines which errors/warnings have
             been encountered.
         """
-        print response
+        lines = response.splitlines()
+        warnings = (response[2].split())[1:]
+        for warning in warnings:
+            print "Warning Line: ", warning
 
+        errors = (response[2].split())[1:]
+        for error in errors:
+            print "Error Line: ", error
         
     def print_handler(self):
         """
