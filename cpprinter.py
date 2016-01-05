@@ -93,6 +93,7 @@ class CpPrinter(threading.Thread):
             ~HQES command and determines which errors/warnings have
             been encountered.
         """
+        print "parse_printer_status"
         lines = response.splitlines()
         warnings = (response[2].split())[1:]
         for warning in warnings:
