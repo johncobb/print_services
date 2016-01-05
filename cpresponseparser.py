@@ -22,7 +22,7 @@ class CpResponseParser():
             in the ZPL documentation
         """
 
-        for line in response.splitLines():
+        for line in response.splitlines():
             if "ERROR" in line:
                 errors = line
 
