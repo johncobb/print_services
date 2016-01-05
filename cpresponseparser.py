@@ -71,7 +71,7 @@ class CpResponseParser():
 
         error_list = []
         error_nibbles = errors[2]
-        for idx in range(len(error_nibbles))
+        for idx in range(len(error_nibbles)):
             nibble = error_nibbles[idx]
             if nibble is "0":
                 continue
