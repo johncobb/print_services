@@ -93,6 +93,7 @@ class CpInetDefs:
     INET_HEARTBEAT_TIME = 20
     INET_HEARTBEAT = "HB"
     INET_HEARTBEAT_ACK_TIME = 10
+    INET_GET_PRINTER_RESPONSE = "PRINTER_RESPONSE"
 
 
 class CpInetError:
@@ -288,8 +289,11 @@ class CpPrinterService(threading.Thread):
             printer_commands = self.accumulate_commands(reply)
 
             for command in printer_commands:
-                self.printerThread.enqueue_command(command)
-                self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
+                if command == CpInetDefs.GET_PRINTER_RESPONSE:
+                    pass
+                else:
+                    self.printerThread.enqueue_command(command)
+                    self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
 
         except socket.error, e:
             if e.args[0] == 'timed out':
@@ -617,6 +621,10 @@ class CpPrinterService(threading.Thread):
 
             elif line == CpInetResponses.TOKEN_TCPHBACK:
                 self.heartbeat_ack_pending = False
+
+            elif line == CpInetDefs.GET_PRINTER_RESPONSE:
+                commands.append(line)
+                self.printer_command_buffer = ""
 
             else:
                 self.printer_command_buffer += line

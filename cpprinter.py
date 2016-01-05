@@ -94,7 +94,6 @@ class CpPrinter(threading.Thread):
         5. enqueue new message
         6. reset the buffer
     """
-        
         if self.ser.isOpen():
             self.ser.close()
         
