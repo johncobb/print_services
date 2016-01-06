@@ -93,7 +93,7 @@ class CpResponseParser():
         """
 
         # Either parsing error string or message string
-        if ZPL.ZplErrorIndicator is in message_str:
+        if ZPL.ZplErrorIndicator in message_str:
             parsing_errors = True
         else:
             parsing_errors = False
