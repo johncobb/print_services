@@ -50,6 +50,11 @@ class CpPrinter(threading.Thread):
         self.ser = serial.Serial(CpDefs.PrinterPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
         self.local_buffer = []
 
+        # Holds a list of strings containing errors/warnings
+        # returned by the printer
+        self.printer_errors = []
+        self.printer_warnings = []
+
         self.response_parser = CpResponseParser()
         threading.Thread.__init__(self)
         
@@ -84,13 +89,11 @@ class CpPrinter(threading.Thread):
         # print "Wrote to printer: ", cmd
         self.ser.write("~HQES")
         for response in self.process_response():
-            if "PRINTER STATUS" in response:
+            if CpZplDefs.ZplPrinterStatusIndicator in response:
                 self.response_parser.parse_printer_status(response)
-            else:
-                print "Response: ", response
-        print "Errors: ", self.response_parser.errors
-        print "Warnings: ", self.response_parser.warnings
 
+        self.printer_errors = self.response_parser.errors
+        self.printer_warnings = self.response_parser.warnings
         
     def print_handler(self):
         """

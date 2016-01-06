@@ -13,3 +13,12 @@ class CpZplDefs:
     ZplCancelAll = "~JA"
     ZplSetMediaSensorCalibration = "~JC"
     ZplPrintConfigurationLabel = "~WC"
+
+    # First item in line for warnings in ~HQES return string
+    ZplWarningIndicator = "WARNINGS:"
+
+    # First item in line for errors in ~HQES return string
+    ZplErrorIndicator = "ERRORS:"
+
+    # First line of status response message
+    ZplPrinterStatusIndicator = "PRINTER STATUS"

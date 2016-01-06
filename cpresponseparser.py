@@ -1,3 +1,5 @@
+from cpzpldefs import CpZplDefs as ZPL
+
 class ResponseCodes:
     """
         NIBBLES is a dict mapping the "Nibble Number" as
@@ -68,8 +70,8 @@ class CpResponseParser():
         lines = response.splitlines()
 
         #There should be exactly one line containing each of these
-        errors = filter(lambda line: "ERRORS" in line, lines)
-        warnings = filter(lambda line: "WARNINGS" in line, lines)
+        errors = filter(lambda line: ZPL.ZplErrorIndicator in line, lines)
+        warnings = filter(lambda line: ZPL.ZplWarningIndicator in line, lines)
 
         if len(errors) is not 1 or len(warnings) is not 1:
             print 'Invalid response string.'
