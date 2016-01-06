@@ -82,7 +82,6 @@ class CpPrinter(threading.Thread):
             except Exception, e:
                 print "CpPrinter::shutdown_thread ERROR: ", e
     
-    @debug_func
     def printer_send(self, cmd):
         if CpDefs.LogVerbosePrinter:
             print 'sending printer command ', cmd
