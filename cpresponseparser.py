@@ -79,6 +79,8 @@ class CpResponseParser():
 
         self.errors = self.parse_message(errors[0], 'error')
         self.warnings = self.parse_message(warnings[0], 'warning')
+        print "Errors: ", self.errors
+        print "Warnings: ", self.warnings
         # self.errors = self.parse_errors(errors[0])
         # self.warnings = self.parse_warnings(warnings[0])
 
