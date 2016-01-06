@@ -5,7 +5,7 @@ import serial
 from cpresponseparser import CpResponseParser
 from cpdefs import CpDefs
 from cpdefs import CpAscii
-from cpzpldefs import ZPL as ZPL
+from cpzpldefs import CpZplDefs as ZPL
 from datetime import datetime
 #import Adafruit_BBIO.UART as UART
 #import Adafruit_BBIO.GPIO as GPIO
