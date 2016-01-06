@@ -87,8 +87,6 @@ class CpPrinter(threading.Thread):
             print 'sending printer command ', cmd
         self.ser.write(cmd)
 
-        self.update_printer_status()
-
     def update_printer_status(self):
         #This tells the printer to return it's status
         self.ser.write(ZPL.ZplPrinterQueryStatus)
