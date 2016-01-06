@@ -88,6 +88,8 @@ class CpPrinter(threading.Thread):
                 self.response_parser.parse_printer_status(response)
             else:
                 print "Response: ", response
+        print "Errors: ", self.response_parser.errors
+        print "Warnings: ", self.response_parser.warnings
 
         
     def print_handler(self):
