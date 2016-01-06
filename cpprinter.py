@@ -88,7 +88,9 @@ class CpPrinter(threading.Thread):
             print 'sending printer command ', cmd
         self.ser.write(cmd)
 
-        #After each send the printer status is requested and stored
+        self.update_printer_status()
+
+    def update_printer_status(self):
         self.ser.write(ZPL.ZplPrinterQueryStatus)
         for response in self.process_response():
             print response
@@ -97,8 +99,7 @@ class CpPrinter(threading.Thread):
 
         self.printer_errors = self.response_parser.errors
         self.printer_warnings = self.response_parser.warnings
-        print self.printer_errors
-        print self.printer_warnings
+        
         
     def print_handler(self):
         """
