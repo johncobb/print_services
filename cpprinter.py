@@ -93,7 +93,6 @@ class CpPrinter(threading.Thread):
     def update_printer_status(self):
         self.ser.write(ZPL.ZplPrinterQueryStatus)
         for response in self.process_response():
-            print response
             if ZPL.ZplPrinterStatusIndicator in response:
                 self.response_parser.parse_printer_status(response)
 
