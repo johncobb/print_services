@@ -253,6 +253,13 @@ class CpPrinterService(threading.Thread):
         """
         #TODO: Seperate into logically correct states
 
+        errors = self.printerThread.errors
+        warnings = self.printerThread.warnings
+        if len(errors) is not 0:
+            print "Printer Errors: ", errors
+        if len(warnings) is not 0:
+            print "Printer Warnings: ", warnings
+
         #Process print job acks
         while self.ack_queue.qsize() > 0:
             self.sock.send(CpDefs.InetTcpParms % self.ack_queue.get())

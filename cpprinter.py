@@ -5,7 +5,7 @@ import serial
 from cpresponseparser import CpResponseParser
 from cpdefs import CpDefs
 from cpdefs import CpAscii
-from cpzpldefs import CpZplDefs
+from cpzpldefs import ZPL as ZPL
 from datetime import datetime
 #import Adafruit_BBIO.UART as UART
 #import Adafruit_BBIO.GPIO as GPIO
@@ -85,11 +85,12 @@ class CpPrinter(threading.Thread):
     def printer_send(self, cmd):
         if CpDefs.LogVerbosePrinter:
             print 'sending printer command ', cmd
-        # self.ser.write(cmd)
-        # print "Wrote to printer: ", cmd
-        self.ser.write("~HQES")
+        self.ser.write(cmd)
+
+        #After each send the printer status is requested and stored
+        self.ser.write(ZPL.ZplPrinterQueryStatus)
         for response in self.process_response():
-            if CpZplDefs.ZplPrinterStatusIndicator in response:
+            if ZPL.ZplPrinterStatusIndicator in response:
                 self.response_parser.parse_printer_status(response)
 
         self.printer_errors = self.response_parser.errors
@@ -119,7 +120,7 @@ class CpPrinter(threading.Thread):
                 self.printer_commands.task_done()
                 self.printer_send(printer_command)
                 if CpDefs.PrinterQueryStatus:
-                    self.printer_send(CpZplDefs.ZplPrinterQueryStatus)
+                    self.printer_send(ZPL.ZplPrinterQueryStatus)
                     self.process_response()
                 
                 continue
@@ -255,13 +256,13 @@ def main(argv):
             break
 
         elif user_input == 'hoststatus':
-            printerThread.enqueue_command(CpZplDefs.ZplHostQueryStatus)
+            printerThread.enqueue_command(ZPL.ZplHostQueryStatus)
 
         elif user_input == 'printerstatus':
-            printerThread.enqueue_command(CpZplDefs.ZplPrinterQueryStatus)
+            printerThread.enqueue_command(ZPL.ZplPrinterQueryStatus)
 
         elif user_input == 'headdiagnostic':
-            printerThread.enqueue_command(CpZplDefs.ZplQueryHeadDiagnostic)         
+            printerThread.enqueue_command(ZPL.ZplQueryHeadDiagnostic)         
 
         elif user_input == 'aztec':
             printerThread.enqueue_command("^XA^BY8,0^FT124,209^BON,8,N,0,N,1,^FDYourTextHere^FS^XZ\r")
