@@ -77,8 +77,39 @@ class CpResponseParser():
             print 'Invalid response string.'
             return
 
-        self.errors = self.parse_errors(errors[0])
-        self.warnings = self.parse_warnings(warnings[0])
+        self.errors = self.parse_message(errors[0], 'error')
+        self.warnings = self.parse_message(warnings[0], 'warning')
+        # self.errors = self.parse_errors(errors[0])
+        # self.warnings = self.parse_warnings(warnings[0])
+
+    def parse_message(self, message_str, message_name):
+        #"ERRORS:" is useless, ignore it
+        words = (error_str.split())[1:]
+
+        # First bit indicates existing errors on '1' or none on '0'
+        if words[0] is "0":
+            return []
+
+        response_list = []
+
+        # The first set of nibbles never holds a value, so we only consider
+        # the second
+        response_nibbles = words[2]
+        for idx in range(len(response_nibbles)):
+            # These nibbles are numbered backwards from typical indexing
+            # so we have to adjust the index
+            nibble_number = 8 - idx
+            nibble = response_nibbles[idx]
+
+            # Value of '0' indicates no error
+            if nibble is '0':
+                continue
+            method = getattr(ResponseCodes, 'get_' + message_name)
+            response_list.append(method(nibble_number, int(nibble)))
+            # response_list.append(ResponseCodes.get_error(nibble_number, int(nibble)))
+
+        return response_list
+
 
     def parse_errors(self, error_str):
         """
