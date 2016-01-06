@@ -7,6 +7,7 @@ from cpdefs import CpDefs
 from cpdefs import CpAscii
 from cpzpldefs import CpZplDefs as ZPL
 from datetime import datetime
+from cpdebug import debug_func
 #import Adafruit_BBIO.UART as UART
 #import Adafruit_BBIO.GPIO as GPIO
 
@@ -52,10 +53,10 @@ class CpPrinter(threading.Thread):
 
         # Holds a list of strings containing errors/warnings
         # returned by the printer
-        self.printer_errors = []
-        self.printer_warnings = []
 
         self.response_parser = CpResponseParser()
+        self.printer_errors = self.response_parser.errors
+        self.printer_warnings = self.response_parser.warnings
         threading.Thread.__init__(self)
         
     def run(self):
@@ -81,7 +82,7 @@ class CpPrinter(threading.Thread):
             except Exception, e:
                 print "CpPrinter::shutdown_thread ERROR: ", e
     
-    
+    @debug_func
     def printer_send(self, cmd):
         if CpDefs.LogVerbosePrinter:
             print 'sending printer command ', cmd
@@ -95,6 +96,8 @@ class CpPrinter(threading.Thread):
 
         self.printer_errors = self.response_parser.errors
         self.printer_warnings = self.response_parser.warnings
+        print self.printer_errors
+        print self.printer_warnings
         
     def print_handler(self):
         """
