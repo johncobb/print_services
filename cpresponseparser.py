@@ -73,7 +73,7 @@ class CpResponseParser():
                 warnings = line
 
         self.current_errors = self.parse_errors(errors)
-        self.current_warnings = parse_warnings(warnings)
+        self.current_warnings = self.parse_warnings(warnings)
 
     def parse_errors(self, error_str):
         """
