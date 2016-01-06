@@ -119,6 +119,8 @@ class CpPrinter(threading.Thread):
         self.printerBusy = True
         
         while not self.closing:
+
+            update_printer_status()
             
             if self.printer_commands.qsize() > 0:
                 printer_command = self.printer_commands.get(True)

@@ -253,7 +253,6 @@ class CpPrinterService(threading.Thread):
         """
         #TODO: Seperate into logically correct states
 
-        self.printerThread.update_printer_status()
         errors = self.printerThread.printer_errors
         warnings = self.printerThread.printer_warnings
         if len(errors) is not 0:
