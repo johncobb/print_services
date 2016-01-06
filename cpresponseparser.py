@@ -44,8 +44,8 @@ class ResponseCodes:
 
 class CpResponseParser():
     def __init__(self):
-        self.current_errors = []
-        self.current_warnings = []
+        self.errors = []
+        self.warnings = []
 
     def parse_printer_status(self, response):
         """
@@ -75,8 +75,8 @@ class CpResponseParser():
             print 'Invalid response string.'
             return
 
-        self.current_errors = self.parse_errors(errors[0])
-        self.current_warnings = self.parse_warnings(warnings[0])
+        self.errors = self.parse_errors(errors[0])
+        self.warnings = self.parse_warnings(warnings[0])
 
     def parse_errors(self, error_str):
         """
