@@ -9,6 +9,7 @@ from cpdefs import CpAscii
 from cplog import CpLog
 from cpstats import CpInetStats
 from cpprinter import CpPrinter
+from cpdebug import debug_func
 
 class CpStateKey:
     NUMBER = 'number'
