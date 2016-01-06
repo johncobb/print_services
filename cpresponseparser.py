@@ -1,26 +1,42 @@
-class PrinterErrorCodes:
+class ResponseCodes:
     """
         NIBBLES is a dict mapping the "Nibble Number" as
         defined in the ZPL documentation Page 225 to a 
         dictionary mapping nibble value to it's error
         condition.
     """
-    # TODO: Make this more intuitive
-    NIBBLES = {3:{0:"",
-                  1:"Invalid Firmware Config",
-                  2:"Printhead Thermistor Open"},
 
-               2:{0:"",
-                  1:"Printhead Over Temperature",
-                  2:"Motor Over Temperature",
-                  4:"Bad Printhead Element",
-                  8:"Printhead Detection Error"},
+    @classmethod
+    def get_error(nibble, value):
+        return ERRORS[nibble][value]
 
-               1:{0:"",
-                  1:"Media Out",
-                  2:"Ribbon Out",
-                  4:"Head Open",
-                  8:"Cutter Fault"}
+    @classmethod
+    def get_warning(nibble, value):
+        return WARNINGS[nibble][value]
+
+    # Map of Nibble # => {Nibble value => Error String}
+    ERRORS = {3:{0:"",
+                 1:"Invalid Firmware Config",
+                 2:"Printhead Thermistor Open"},
+
+              2:{0:"",
+                 1:"Printhead Over Temperature",
+                 2:"Motor Over Temperature",
+                 4:"Bad Printhead Element",
+                 8:"Printhead Detection Error"},
+
+              1:{0:"",
+                 1:"Media Out",
+                 2:"Ribbon Out",
+                 4:"Head Open",
+                 8:"Cutter Fault"}
+             }
+
+    # Map of Nibble # => {Nibble value => Warning String}
+    WARNINGS = {1:{0:"",
+                   4:"Replace Printhead",
+                   2:"Clean Printhead",
+                   1:"Need to Calibrate Media"}
                }
 
 class CpResponseParser():
@@ -83,8 +99,7 @@ class CpResponseParser():
             nibble = error_nibbles[idx]
             if nibble is "0":
                 continue
-            # TODO: Fix this formatting. It's awful
-            error_list.append(PrinterErrorCodes.NIBBLES[nibble_number][int(nibble)])
+            error_list.append(ResponseCodes.get_error(nibble_number, int(nibble)))
 
         return error_list
 
