@@ -84,7 +84,7 @@ class CpResponseParser():
 
     def parse_message(self, message_str, message_name):
         #"ERRORS:" is useless, ignore it
-        words = (error_str.split())[1:]
+        words = (message_str.split())[1:]
 
         # First bit indicates existing errors on '1' or none on '0'
         if words[0] is "0":
