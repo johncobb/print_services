@@ -106,6 +106,11 @@ class CpResponseParser():
             # Value of '0' indicates no error
             if nibble is '0':
                 continue
+
+            # This returns a function constructed from the passed in
+            # method name. The strings are resolved as a member of the 
+            # class ResponseCodes. In this case it doesn't do much except
+            # make the code worse. But it's really cool.
             method = getattr(ResponseCodes, 'get_' + message_name)
             response_list.append(method(nibble_number, int(nibble)))
             # response_list.append(ResponseCodes.get_error(nibble_number, int(nibble)))
