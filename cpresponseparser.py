@@ -7,12 +7,12 @@ class ResponseCodes:
     """
 
     @classmethod
-    def get_error(nibble, value):
-        return ERRORS[nibble][value]
+    def get_error(cls, nibble, value):
+        return cls.ERRORS[nibble][value]
 
     @classmethod
-    def get_warning(nibble, value):
-        return WARNINGS[nibble][value]
+    def get_warning(cls, nibble, value):
+        return cls.WARNINGS[nibble][value]
 
     # Map of Nibble # => {Nibble value => Error String}
     ERRORS = {3:{0:"",
