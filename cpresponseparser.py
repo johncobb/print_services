@@ -14,6 +14,7 @@ class ResponseCodes:
     def get_warning(cls, nibble, value):
         return cls.WARNINGS[nibble][value]
 
+
     # Map of Nibble # => {Nibble value => Error String}
     # Defined on Table 13 Pg 225 of ZPL Documentation
     ERRORS = {3:{0:"",
@@ -64,16 +65,18 @@ class CpResponseParser():
             The meaning of the hex digit strings are defined
             in the ZPL documentation
         """
+        lines = response.splitlines()
 
-        for line in response.splitlines():
-            if "ERROR" in line:
-                errors = line
+        #There should be exactly one line containing each of these
+        errors = filter(lambda line: "ERRORS" in line, lines)
+        warnings = filter(lambda line: "WARNINGS" in line, lines)
 
-            elif "WARNING" in line:
-                warnings = line
+        if len(errors) is not 1 or len(warnings) is not 1:
+            print 'Invalid response string.'
+            return
 
-        self.current_errors = self.parse_errors(errors)
-        self.current_warnings = self.parse_warnings(warnings)
+        self.current_errors = self.parse_errors(errors[0])
+        self.current_warnings = self.parse_warnings(warnings[0])
 
     def parse_errors(self, error_str):
         """
