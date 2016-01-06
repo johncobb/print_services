@@ -77,10 +77,10 @@ class CpResponseParser():
             print 'Invalid response string.'
             return
 
-        self.errors = self.parse_errors(errors[0])
-        self.warnings = self.parse_warnings(warnings[0])
+        self.errors = self.parse_message(errors[0])
+        self.warnings = self.parse_message(warnings[0])
 
-    def parse_errors(self, error_str):
+    def parse_message(self, message_str):
         """
             errors is the "ERRORS:" string from the printer
             status response. It takes the form:
@@ -92,63 +92,80 @@ class CpResponseParser():
             ZPL documentation
         """
 
-        #"ERRORS:" is useless, ignore it
-        errors = (error_str.split())[1:]
+        # Either parsing error string or message string
+        if ZPL.ZplErrorIndicator is in message_str:
+            parsing_errors = True
+        else:
+            parsing_errors = False
 
-        # First bit indicates existing errors on '1' or none on '0'
-        if errors[0] is "0":
+        #"ERRORS:"/"WARNINGS:" is useless, ignore it
+        words = (message_str.split())[1:]
+
+        if len(words) is not 3:
+            print 'Invalid message string'
             return []
 
-        error_list = []
+        # First bit indicates existing errors on '1' or none on '0'
+        if words[0] is '0':
+            return []
+
+        message_list = []
 
         # The first set of nibbles never holds a value, so we only consider
         # the second
-        error_nibbles = errors[2]
-        for idx in range(len(error_nibbles)):
+        message_nibbles = words[2]
+
+        for idx in range(len(message_nibbles)):
             # These nibbles are numbered backwards from typical indexing
             # so we have to adjust the index
             nibble_number = 8 - idx
-            nibble = error_nibbles[idx]
+            nibble = message_nibbles[idx]
 
             # Value of '0' indicates no error
             if nibble is '0':
                 continue
-            error_list.append(ResponseCodes.get_error(nibble_number, int(nibble)))
 
-        return error_list
+            if parsing_errors:
+                message_list.append(ResponseCodes.get_error(nibble_number,
+                                                            int(nibble)))
+            else:
+                message_list.append(ResponseCodes.get_warning(nibble_number,
+                                                              int(nibble)))
 
-    def parse_warnings(self, warning_str):
-        """
-            errors is the "ERRORS:" string from the printer
-            status response. It takes the form:
+        return message_list
 
-            > WARNINGS: 0 00000000 00000000
+    # def parse_warnings(self, warning_str):
+        # """
+            # errors is the "ERRORS:" string from the printer
+            # status response. It takes the form:
 
-            Each character in the latter 3 strings represents a 
-            hexadecimal digit. The meaning of each character is
-            defined in the ZPL documentation
-        """
+            # > WARNINGS: 0 00000000 00000000
 
-        #"WARNINGS:" is useless, ignore it
-        warnings = (warning_str.split())[1:]
+            # Each character in the latter 3 strings represents a 
+            # hexadecimal digit. The meaning of each character is
+            # defined in the ZPL documentation
+        # """
 
-        # First bit indicates existing warnings on '1' or none on '0'
-        if warnings[0] is '0':
-            return []
+        # # "WARNINGS:" is useless, ignore it
+        # warnings = (warning_str.split())[1:]
 
-        warning_list = []
-        # The first set of nibbles never holds a value, so we only consider
-        # the second
-        warning_nibbles = warnings[2]
-        for idx in range(len(warning_nibbles)):
-            # These nibbles are numbered backwards from typical indexing
-            # so we have to adjust the index
-            nibble_number = 8 - idx
-            nibble = warning_nibbles[idx]
+        # # First bit indicates existing warnings on '1' or none on '0'
+        # if warnings[0] is '0':
+            # return []
 
-            # Value of '0' indicates no error
-            if nibble is "0":
-                continue
-            warning_list.append(RespnoseCodes.get_warning(nibble_number, int(nibble)))
+        # warning_list = []
+        # # The first set of nibbles never holds a value, so we only consider
+        # # the second
+        # warning_nibbles = warnings[2]
+        # for idx in range(len(warning_nibbles)):
+            # # These nibbles are numbered backwards from typical indexing
+            # # so we have to adjust the index
+            # nibble_number = 8 - idx
+            # nibble = warning_nibbles[idx]
 
-        return warning_list
+            # # Value of '0' indicates no error
+            # if nibble is "0":
+                # continue
+            # warning_list.append(RespnoseCodes.get_warning(nibble_number, int(nibble)))
+
+        # return warning_list
