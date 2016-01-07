@@ -44,19 +44,16 @@ class CpPrinter(threading.Thread):
         self.printerResponseCallbackFunc = printerResponseCallbackFunc
         self.printerBusy = False
         self.printerResult = CpPrinterResult()
-        self.printerToken = ""
         # Used to find the first 0x00 in the byte stream
         # Once found ignore that message and continue processing
         # onto the next 0x00 found. This is our first full message
         self.ser = serial.Serial(CpDefs.PrinterPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
         self.local_buffer = []
 
-        # Holds a list of strings containing errors/warnings
-        # returned by the printer
-
         self.response_parser = CpResponseParser()
         self.printer_errors = self.response_parser.errors
         self.printer_warnings = self.response_parser.warnings
+
         threading.Thread.__init__(self)
         
     def run(self):
