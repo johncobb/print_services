@@ -12,6 +12,9 @@ from cpprinter import CpPrinter
 from cpdebug import debug_func
 
 class CpStateKey:
+    """
+    These are the dict keys for the state dicts in CpPrinterStates
+    """
     NUMBER = 'number'
     NAME = 'name'
     TIMEOUT = 'timeout'
@@ -25,6 +28,12 @@ class CpPrinterStates:
                                debugging purposes
         CpStateKey.TIMEOUT  => The state's timeout value in seconds
         CpStateKey.FUNCTION => The state's function
+
+
+    This was originally a static reference to state values, but that made
+    it impossible to incorporate the CpPrinterService state functions into
+    it. To resolve this CpPrinterStates is instantiated and passed a
+    reference to a CpPrinterService instance.
     """
 
     def __init__(self, service):
