@@ -2,10 +2,12 @@ import threading
 import time
 import Queue
 import serial
+from cpresponseparser import CpResponseParser
 from cpdefs import CpDefs
 from cpdefs import CpAscii
-from cpzpldefs import CpZplDefs
+from cpzpldefs import CpZplDefs as ZPL
 from datetime import datetime
+from cpdebug import debug_func
 #import Adafruit_BBIO.UART as UART
 #import Adafruit_BBIO.GPIO as GPIO
 
@@ -48,6 +50,13 @@ class CpPrinter(threading.Thread):
         # onto the next 0x00 found. This is our first full message
         self.ser = serial.Serial(CpDefs.PrinterPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
         self.local_buffer = []
+
+        # Holds a list of strings containing errors/warnings
+        # returned by the printer
+
+        self.response_parser = CpResponseParser()
+        self.printer_errors = self.response_parser.errors
+        self.printer_warnings = self.response_parser.warnings
         threading.Thread.__init__(self)
         
     def run(self):
@@ -73,28 +82,35 @@ class CpPrinter(threading.Thread):
             except Exception, e:
                 print "CpPrinter::shutdown_thread ERROR: ", e
     
-    
     def printer_send(self, cmd):
         if CpDefs.LogVerbosePrinter:
             print 'sending printer command ', cmd
-        print "Wrote: ", self.ser.write(cmd)
-        print "Printing Responses:"
-        self.ser.write("~HQES")
-        self.ser.write("~HQMI")
+        self.ser.write(cmd)
+
+    def update_printer_status(self):
+        #This tells the printer to return it's status
+        self.ser.write(ZPL.ZplPrinterQueryStatus)
+
+        #Multiple responses are possible, but we only
+        # care about the ones from a status query
         for response in self.process_response():
-            print "Response: ", response
+            if ZPL.ZplPrinterStatusIndicator in response:
+                self.response_parser.parse_printer_status(response)
+
+        self.printer_errors = self.response_parser.errors
+        self.printer_warnings = self.response_parser.warnings
+        
         
     def print_handler(self):
-    """
-        method: print_handler
-        1. Open serial port
-        2. process local printer commands
-        3. accumulate characters over serial port
-        4. check for new message indicator (0x00)
-        5. enqueue new message
-        6. reset the buffer
-    """
-        
+        """
+            method: print_handler
+            1. Open serial port
+            2. process local printer commands
+            3. accumulate characters over serial port
+            4. check for new message indicator (0x00)
+            5. enqueue new message
+            6. reset the buffer
+        """
         if self.ser.isOpen():
             self.ser.close()
         
@@ -103,13 +119,15 @@ class CpPrinter(threading.Thread):
         self.printerBusy = True
         
         while not self.closing:
+
+            self.update_printer_status()
             
             if self.printer_commands.qsize() > 0:
                 printer_command = self.printer_commands.get(True)
                 self.printer_commands.task_done()
                 self.printer_send(printer_command)
                 if CpDefs.PrinterQueryStatus:
-                    self.printer_send(CpZplDefs.ZplPrinterQueryStatus)
+                    self.printer_send(ZPL.ZplPrinterQueryStatus)
                     self.process_response()
                 
                 continue
@@ -148,19 +166,6 @@ class CpPrinter(threading.Thread):
 
         return self.local_buffer
                 
-        # parse the local_local buffer to determine ack or nak
-        # example result:
-        # PRINTER STATUS
-        #    ERRORS:   1 00000000 0000000B
-        #    WARNINGS: 0 00000000 00000000
-            
-#         tuples = self.local_buffer.split()
-#         
-#         if(tuples >= 6):
-#             print tuples[2], tuples[3], tuples[4], tuples[5]
-        #end parse local variable
-        
-             
     def enqueue_printer(self, cmd):
         try:
             self.data_buffer.put(cmd, block=True, timeout=1)
@@ -258,13 +263,13 @@ def main(argv):
             break
 
         elif user_input == 'hoststatus':
-            printerThread.enqueue_command(CpZplDefs.ZplHostQueryStatus)
+            printerThread.enqueue_command(ZPL.ZplHostQueryStatus)
 
         elif user_input == 'printerstatus':
-            printerThread.enqueue_command(CpZplDefs.ZplPrinterQueryStatus)
+            printerThread.enqueue_command(ZPL.ZplPrinterQueryStatus)
 
         elif user_input == 'headdiagnostic':
-            printerThread.enqueue_command(CpZplDefs.ZplQueryHeadDiagnostic)         
+            printerThread.enqueue_command(ZPL.ZplQueryHeadDiagnostic)         
 
         elif user_input == 'aztec':
             printerThread.enqueue_command("^XA^BY8,0^FT124,209^BON,8,N,0,N,1,^FDYourTextHere^FS^XZ\r")

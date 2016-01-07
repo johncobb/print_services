@@ -9,6 +9,7 @@ from cpdefs import CpAscii
 from cplog import CpLog
 from cpstats import CpInetStats
 from cpprinter import CpPrinter
+from cpdebug import debug_func
 
 class CpStateKey:
     NUMBER = 'number'
@@ -93,6 +94,7 @@ class CpInetDefs:
     INET_HEARTBEAT_TIME = 20
     INET_HEARTBEAT = "HB"
     INET_HEARTBEAT_ACK_TIME = 10
+    INET_GET_PRINTER_RESPONSE = "PRINTER_RESPONSE"
 
 
 class CpInetError:
@@ -160,7 +162,9 @@ class CpPrinterService(threading.Thread):
         self.current_state = CpPrinterState.INITIALIZE
         self.inet_error = CpInetError()
         self.log = CpLog()
-        self.waitRetryBackoff = {1:5, 2:15, 3:30}
+        # self.waitRetryBackoff = {1:5, 2:15, 3:30}
+        # Gradually increasing backoff as more errors occur
+        self.waitRetryBackoff = [5, 15, 30]
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
         self.printer_command_buffer = "" #stores incomplete printer commands
@@ -249,6 +253,13 @@ class CpPrinterService(threading.Thread):
         """
         #TODO: Seperate into logically correct states
 
+        errors = self.printerThread.printer_errors
+        warnings = self.printerThread.printer_warnings
+        if len(errors) is not 0:
+            print "Printer Errors: ", errors
+        if len(warnings) is not 0:
+            print "Printer Warnings: ", warnings
+
         #Process print job acks
         while self.ack_queue.qsize() > 0:
             self.sock.send(CpDefs.InetTcpParms % self.ack_queue.get())
@@ -286,8 +297,11 @@ class CpPrinterService(threading.Thread):
             printer_commands = self.accumulate_commands(reply)
 
             for command in printer_commands:
-                self.printerThread.enqueue_command(command)
-                self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
+                if command == CpInetDefs.INET_GET_PRINTER_RESPONSE:
+                    pass
+                else:
+                    self.printerThread.enqueue_command(command)
+                    self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
 
         except socket.error, e:
             if e.args[0] == 'timed out':
@@ -312,6 +326,11 @@ class CpPrinterService(threading.Thread):
         self.enter_state(CpPrinterState.HEARTBEAT)
 
     def inet_connect(self):
+        """
+            This attempts a connection with the server. Successful
+            connections move the service into it's idle state while
+            unsuccessful connections are logged and handled accordingly. 
+        """
         try:
             self.sock.connect((self.remoteIp, self.port))
             # New Code for Timeout
@@ -326,7 +345,8 @@ class CpPrinterService(threading.Thread):
 
             self.enter_state(CpPrinterState.IDLE)
 
-            self.heartbeat_ack_pending = False #Don't expect heartbeat ack until heartbeat sent
+            #Don't expect heartbeat ack until heartbeat is sent
+            self.heartbeat_ack_pending = False 
             return True
         except:
             self.log.logError('inet_connect: failed')
@@ -458,9 +478,14 @@ class CpPrinterService(threading.Thread):
         self.__lock.release()
 
     def handle_inet_init_error(self):
-        # If we get this far we received an error
+        """
+            This method should be called when an init error
+            in inet_init is encountered. It updates error statistics
+            and begins a retry-backoff if the maximum number of
+            init errors have occured.
+        """
+
         self.inet_error.InitializeErrors += 1
-        # Updated Statistics
         self.inet_stats.InitErrors += 1
 
         if self.inet_error.InitializeErrors > self.inet_error.InitializeMax:
@@ -481,12 +506,16 @@ class CpPrinterService(threading.Thread):
         time.sleep(self.waitRetryBackoff[self.inet_error.InitializeErrors])
 
     def handle_inet_connect_error(self):
-        self.inet_error.ConnectErrors += 1
+        """
+            This method should be called when an inet_connect error occurs.
 
-        # Updated Statistics
-        self.inet_stats.ConnectErrors += 1
-
+            It updates error statistics and waits to continue or begins
+            re-initialization of the socket.
+        """
         print 'CONNECT FAILED'
+
+        self.inet_error.ConnectErrors += 1
+        self.inet_stats.ConnectErrors += 1
 
         if self.inet_error.ConnectErrors > self.inet_error.ConnectMax:
             # Handle Max Errors
@@ -500,12 +529,17 @@ class CpPrinterService(threading.Thread):
 
 
     def handle_inet_send_error(self):
-        self.inet_error.SendErrors += 1
+        """
+            This method should be called when an inet_send error occurs.
 
-        # Updated Statistics
-        self.inet_stats.SendErrors += 1
+            It updates error statistics and waits to continue or begins
+            re-initialization of the socket.
+        """
 
         print 'SEND FAILED'
+
+        self.inet_error.SendErrors += 1
+        self.inet_stats.SendErrors += 1
 
         if self.inet_error.SendErrors > self.inet_error.SendMax:
             # We have exceeded the maximum allowable attempts so
@@ -596,6 +630,10 @@ class CpPrinterService(threading.Thread):
             elif line == CpInetResponses.TOKEN_TCPHBACK:
                 self.heartbeat_ack_pending = False
 
+            elif line == CpInetDefs.INET_GET_PRINTER_RESPONSE:
+                commands.append(line)
+                self.printer_command_buffer = ""
+
             else:
                 self.printer_command_buffer += line
 
@@ -638,7 +676,6 @@ class CpPrinterService(threading.Thread):
             print logmsg
 
         return False
-
 
 
     def query_interface(self, interface):
