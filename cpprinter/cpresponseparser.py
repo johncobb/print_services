@@ -19,29 +19,29 @@ class ResponseCodes:
 
     # Map of Nibble # => {Nibble value => Error String}
     # Defined on Table 13 Pg 225 of ZPL Documentation
-    ERRORS = {3:{0:"",
-                 1:"Invalid Firmware Config",
-                 2:"Printhead Thermistor Open"},
+    ERRORS = {3:{0:'',
+                 1:'Invalid Firmware Config',
+                 2:'Printhead Thermistor Open'},
 
-              2:{0:"",
-                 1:"Printhead Over Temperature",
-                 2:"Motor Over Temperature",
-                 4:"Bad Printhead Element",
-                 8:"Printhead Detection Error"},
+              2:{0:'',
+                 1:'Printhead Over Temperature',
+                 2:'Motor Over Temperature',
+                 4:'Bad Printhead Element',
+                 8:'Printhead Detection Error'},
 
-              1:{0:"",
-                 1:"Media Out",
-                 2:"Ribbon Out",
-                 4:"Head Open",
-                 8:"Cutter Fault"}
+              1:{0:'',
+                 1:'Media Out',
+                 2:'Ribbon Out',
+                 4:'Head Open',
+                 8:'Cutter Fault'}
              }
 
     # Map of Nibble # => {Nibble value => Warning String}
     # Defined on Table 14 Pg 226 of ZPL Documentation
-    WARNINGS = {1:{0:"",
-                   4:"Replace Printhead",
-                   2:"Clean Printhead",
-                   1:"Need to Calibrate Media"}
+    WARNINGS = {1:{0:'',
+                   4:'Replace Printhead',
+                   2:'Clean Printhead',
+                   1:'Need to Calibrate Media'}
                }
 
 class CpResponseParser():
