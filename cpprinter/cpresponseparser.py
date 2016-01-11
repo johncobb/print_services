@@ -107,12 +107,12 @@ class CpResponseParser():
         #"ERRORS:"/"WARNINGS:" is useless, ignore it
         words = (message_str.split())[1:]
 
-        if len(words) is not 3:
+        if len(words) != 3:
             print 'Invalid message string'
             return []
 
         # First bit indicates existing errors on '1' or none on '0'
-        if words[0] is '0':
+        if words[0] == '0':
             return []
 
         message_list = []
@@ -128,7 +128,7 @@ class CpResponseParser():
             nibble = message_nibbles[idx]
 
             # Value of '0' indicates no error
-            if nibble is '0':
+            if nibble == '0':
                 continue
 
             if parsing_errors:

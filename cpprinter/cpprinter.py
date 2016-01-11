@@ -246,7 +246,7 @@ def main(argv):
     
     print "running as console...\r\n"
     while True:
-        user_input = raw_input(">> ").tolower()
+        user_input = raw_input(">> ").lower()
                 # Python 3 users
                 # input = input(">> ")
         if user_input == 'exit':

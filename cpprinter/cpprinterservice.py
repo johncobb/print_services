@@ -266,9 +266,9 @@ class CpPrinterService(threading.Thread):
 
         errors = self.printerThread.printer_errors
         warnings = self.printerThread.printer_warnings
-        if len(errors) is not 0:
+        if len(errors) != 0:
             print "Printer Errors: ", errors
-        if len(warnings) is not 0:
+        if len(warnings) != 0:
             print "Printer Warnings: ", warnings
 
         #Process print job acks
