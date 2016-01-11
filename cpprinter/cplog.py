@@ -14,8 +14,6 @@ class CpLog:
         f.write(log)
         f.close()
         
-        pass
-    
     def logStdOut(self):
         f = open(self.STDOUT_PATH, 'a')
         sys.stdout = f

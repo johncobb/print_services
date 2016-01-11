@@ -159,7 +159,6 @@ class InitVars:
 
 
 class IfConfigVars:
-    #Interface = 'ppp0'
     Interface = 'eth0'
     RX_bytes = 0
     TX_bytes = 0
