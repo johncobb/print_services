@@ -750,12 +750,10 @@ class CpPrinterService(threading.Thread):
 
         return inet_result
 
-
-def printerDataReceived(data):
-    print 'Callback function printerDataReceived ', data
-
-
 if __name__ == '__main__':
+
+    def printerDataReceived():
+        print 'Callback function printerDataReceived ', data
 
     printThread = CpPrinter(printerDataReceived)
     printThread.start()
