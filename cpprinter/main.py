@@ -36,9 +36,9 @@ def main(argv):
 
     print "running as console...\r\n"
     while True:
-        input = raw_input(">> ")
+        input = raw_input(">> ").lower()
 
-        if input == 'exit' or input == 'EXIT':
+        if input == 'exit':
             printerServiceThread.shutdown_thread()
 
             while printerServiceThread.isAlive():

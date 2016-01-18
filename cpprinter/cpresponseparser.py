@@ -70,15 +70,15 @@ class CpResponseParser():
         lines = response.splitlines()
 
         #There should be exactly one line containing each of these
-        errors = filter(lambda line: ZPL.ZplErrorIndicator in line, lines)
-        warnings = filter(lambda line: ZPL.ZplWarningIndicator in line, lines)
+        errors = next((line for line in lines if ZPL.ZplErrorIndicator in line), None)
+        warnings = next((line for line in lines if ZPL.ZplWarningIndicator in line), None)
 
-        if len(errors) is not 1 or len(warnings) is not 1:
+        if errors is None or warnings is None:
             print 'Invalid response string.'
             return
 
-        self.errors = self.parse_message(errors[0])
-        self.warnings = self.parse_message(warnings[0])
+        self.errors = self.parse_message(errors)
+        self.warnings = self.parse_message(warnings)
 
     def parse_message(self, message_str):
         """
@@ -107,12 +107,12 @@ class CpResponseParser():
         #"ERRORS:"/"WARNINGS:" is useless, ignore it
         words = (message_str.split())[1:]
 
-        if len(words) is not 3:
+        if len(words) != 3:
             print 'Invalid message string'
             return []
 
         # First bit indicates existing errors on '1' or none on '0'
-        if words[0] is '0':
+        if words[0] == '0':
             return []
 
         message_list = []
@@ -128,7 +128,7 @@ class CpResponseParser():
             nibble = message_nibbles[idx]
 
             # Value of '0' indicates no error
-            if nibble is '0':
+            if nibble == '0':
                 continue
 
             if parsing_errors:

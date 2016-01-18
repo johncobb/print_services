@@ -159,7 +159,6 @@ class InitVars:
 
 
 class IfConfigVars:
-    #Interface = 'ppp0'
     Interface = 'eth0'
     RX_bytes = 0
     TX_bytes = 0
@@ -267,9 +266,9 @@ class CpPrinterService(threading.Thread):
 
         errors = self.printerThread.printer_errors
         warnings = self.printerThread.printer_warnings
-        if len(errors) is not 0:
+        if len(errors) != 0:
             print "Printer Errors: ", errors
-        if len(warnings) is not 0:
+        if len(warnings) != 0:
             print "Printer Warnings: ", warnings
 
         #Process print job acks
@@ -751,12 +750,10 @@ class CpPrinterService(threading.Thread):
 
         return inet_result
 
-
-def printerDataReceived(data):
-    print 'Callback function printerDataReceived ', data
-
-
 if __name__ == '__main__':
+
+    def printerDataReceived():
+        print 'Callback function printerDataReceived ', data
 
     printThread = CpPrinter(printerDataReceived)
     printThread.start()

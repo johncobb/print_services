@@ -56,4 +56,38 @@ class TestCpResponseParser(unittest.TestCase):
         self.assertEqual(self.parser.errors, ['Printhead Over Temperature', 'Ribbon Out'])
         self.assertEqual(self.parser.warnings, ['Need to Calibrate Media'])
 
+    def test_invalid_message_no_warning_or_error(self):
+        message = '\n\nPRINTER STATUS\n   \n\n'
 
+        #After parse_printer_status these should not change
+        self.parser.errors = "Test Value"
+        self.parser.warnings = "Test Value"
+
+        self.parser.parse_printer_status(message)
+
+        self.assertEqual(self.parser.errors, "Test Value")
+        self.assertEqual(self.parser.warnings, "Test Value")
+
+    def test_invalid_message_no_warnings(self):
+        message = '\n\nPRINTER STATUS\n   ERRORS: 1 00000000 00000012\n\n'
+
+        #After parse_printer_status these should not change
+        self.parser.errors = "Test Value"
+        self.parser.warnings = "Test Value"
+
+        self.parser.parse_printer_status(message)
+
+        self.assertEqual(self.parser.errors, "Test Value")
+        self.assertEqual(self.parser.warnings, "Test Value")
+
+    def test_invalid_message_no_errors(self):
+        message = '\n\nPRINTER STATUS\n  \n WARNINGS: 1 000000000 00000001\n'
+
+        #After parse_printer_status these should not change
+        self.parser.errors = "Test Value"
+        self.parser.warnings = "Test Value"
+
+        self.parser.parse_printer_status(message)
+
+        self.assertEqual(self.parser.errors, "Test Value")
+        self.assertEqual(self.parser.warnings, "Test Value")
