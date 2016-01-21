@@ -273,8 +273,11 @@ def main(argv):
             printerThread.enqueue_command("^XA^BY8,0^FT124,209^BON,8,N,0,N,1,^FDYourTextHere^FS^XZ\r")
 
         elif user_input == 'test':
-            in_file = file("PrestigeLabel.zpl", 'r')
-            printerThread.enqueue_command(in_file.read())
+            in_file = file("../InteriorLabel-corrected.zpl", 'r')
+            str = in_file.read()
+            print str
+            printerThread.enqueue_command(str)
+            #printerThread.enqueue_command(in_file.read())
             in_file.close()
 
         elif user_input == 'matrix':
