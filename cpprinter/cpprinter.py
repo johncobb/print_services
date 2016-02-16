@@ -91,7 +91,6 @@ class CpPrinter(threading.Thread):
         #Multiple responses are possible, but we only
         # care about the ones from a status query
         for response in self.process_response():
-            print 'response = ', response
             if ZPL.ZplPrinterStatusIndicator in response:
                 self.response_parser.parse_printer_status(response)
 

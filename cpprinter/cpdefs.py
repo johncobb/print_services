@@ -11,7 +11,7 @@ class CpDefs:
     RunAsService = False
     PrinterQueryStatus = False
     PrinterQueueTimeout = 5
-    PrinterPort = "/dev/ttyUSB0"
+    PrinterPort = "/dev/ttyUSB1"
     # PrinterPort = "/dev/tty.usbserial-FTUTL4CN"
     PrinterBaud = 9600
     InetHost = "appserver02.cphandheld.com"
