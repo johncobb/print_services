@@ -4,10 +4,12 @@ regex="^[[:digit:]]{4}$"
 
 echo "What is this printer's ID? "
 read id
+id=`printf "%04d" $id`
 
 while [[ ! $id =~ $regex ]]; do
     echo "Invalid Printer Id. Must be exactly 4 numbers."
     read id
+    id=`printf "%04d" $id`
 done
 
 sed -i "/PrinterId/c\    PrinterId = \"$id\"" cpprinter/cpdefs.py
