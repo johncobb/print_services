@@ -7,14 +7,11 @@ class CpEncoding:
     CpTcpAscii = 4
 
 class CpDefs:
-    #PrinterId = "0000"
-    PrinterIds = ["0000"]
+    PrinterIds = ["8888", "8889"]
     RunAsService = False
     PrinterQueryStatus = False
     PrinterQueueTimeout = 5
-    #PrinterPort = "/dev/ttyUSB0"
-    PrinterPorts = ["/dev/ttyUSB0"]
-    # PrinterPort = "/dev/tty.usbserial-FTUTL4CN"
+    PrinterPorts = ["/dev/ttyUSB0", "/dev/ttyUSB1"]
     PrinterBaud = 9600
     InetHost = "appserver02.cphandheld.com"
     # InetHost = "96.27.198.215"
