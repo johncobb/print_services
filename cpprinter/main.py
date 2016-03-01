@@ -22,17 +22,27 @@ def inetDataReceived(data):
 
 def main(argv):
 
-    printerThread = CpPrinter(printerDataReceived)
-    printerThread.start()
+    printerServices = []
+    for printerID in CpDefs.PrinterIds:
+       printerThread = CpPrinter(printerID, printerDataReceived)
+       printerThread.start()
+       printerServiceThread = CpPrinterService(printerThread, inetDataReceived)
+       printerServiceThread.start()
+       printerServices.append(printerServiceThread)
+    
 
-    printerServiceThread = CpPrinterService(printerThread, inetDataReceived)
-    printerServiceThread.start()
+    # printerThread = CpPrinter(CpDefs.PrinterId, printerDataReceived)
+    # printerThread.start()
+
+    # printerServiceThread = CpPrinterService(printerThread, inetDataReceived)
+    # printerServiceThread.start()
 
     if CpDefs.RunAsService == True:
         print "running as service...\r\n"
         while True:
             time.sleep(.005)
 
+    printerServiceThread = printerServices[0]
 
     print "running as console...\r\n"
     while True:

@@ -31,11 +31,11 @@ class CpPrinterResult:
     Data = ""
     
 class CpPrinter(threading.Thread):
-    
-    def __init__(self, printerResponseCallbackFunc=None, *args):
+    def __init__(self, printerID, printerResponseCallbackFunc=None, *args):
         self._target = self.print_handler
         self._args = args
         self.__lock = threading.Lock()
+        self.printerID = printerID
         self.closing = False # A flag to indicate thread shutdown
         self.printer_commands = Queue.Queue(128)
         self.data_buffer = Queue.Queue(128)

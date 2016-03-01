@@ -180,6 +180,8 @@ class CpPrinterService(threading.Thread):
         self.inet_error = CpInetError()
         self.log = CpLog()
 
+        self.printerID = printerThread.printerID
+
         self.states = CpPrinterStates(self)
         self.current_state = self.states.INITIALIZE
 
@@ -351,7 +353,8 @@ class CpPrinterService(threading.Thread):
                 print 'inet_connect: successful'
 
             # TODO: automatically send up the PrinterId to check in with server
-            self.enqueue_packet(CpDefs.PrinterId)
+            #self.enqueue_packet(CpDefs.PrinterId)
+            self.enqueue_packet(self.printerID)
 
             self.enter_state(self.states.IDLE)
 
@@ -568,7 +571,8 @@ class CpPrinterService(threading.Thread):
     def inet_send_packet(self, packet):
         #tcpPacket = "178\r"
 
-        tcpPacket = CpInetDefs.INET_TCPPARAMS % (CpDefs.PrinterId)
+        #tcpPacket = CpInetDefs.INET_TCPPARAMS % (CpDefs.PrinterId)
+        tcpPacket = CpInetDefs.INET_TCPPARAMS % (self.printerID)
         # New postData format
 
         result = CpInetResultCode()
@@ -779,7 +783,8 @@ if __name__ == '__main__':
             print "Exiting app"
             break
         elif input == '0':
-            inetThread.enqueue_packet(CpDefs.PrinterId)
+            #inetThread.enqueue_packet(CpDefs.PrinterId)
+            inetThread.enqueue_packet(self.printerID)
         elif input == '1':
             printThread.enqueue_command("hello world\r")
 
