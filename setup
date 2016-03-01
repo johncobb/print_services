@@ -1,15 +1,37 @@
 #!/bin/bash
 
 regex="^[[:digit:]]{4}$"
+regex2="^[1234]$"
 
-echo "What is this printer's ID? "
-read id
-id=`printf "%04d" $id`
-
-while [[ ! $id =~ $regex ]]; do
-    echo "Invalid Printer Id. Must be exactly 4 numbers."
-    read id
-    id=`printf "%04d" $id`
+echo "How many printers will be attached to this Pi? "
+read num
+while [[ ! $num =~ $regex2 ]]; do
+    echo "Invalid number. Try again. "
+    read num
 done
 
-sed -i "/PrinterId/c\    PrinterId = \"$id\"" cpprinter/cpdefs.py
+ids=""
+ports=""
+
+for (( c=0; c<$num; c++))
+do
+    echo "Enter printer ID $c: "
+    read id
+    id=`printf "%04d" $id`
+    while [[ ! $id =~ $regex ]]; do
+        echo "Invalid Printer Id. Must be a number between 0000-9999"
+        read id
+        id=`printf "%04d" $id`
+    done
+    if [[ -z $ids ]];
+    then
+        ids="\"$id\""
+        ports="\"/dev/ttyUSB$c\""
+    else
+        ids="$ids, \"$id\""
+        ports="$ports, \"/dev/ttyUSB$c\""
+    fi
+done
+
+sed -i "/PrinterId/c\    PrinterIds = [$ids]" cpprinter/cpdefs.py
+sed -i "/PrinterPort/c\    PrinterPorts = [$ports]" cpprinter/cpdefs.py

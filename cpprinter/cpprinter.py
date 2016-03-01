@@ -31,11 +31,11 @@ class CpPrinterResult:
     Data = ""
     
 class CpPrinter(threading.Thread):
-    
-    def __init__(self, printerResponseCallbackFunc=None, *args):
+    def __init__(self, printerID, printerPort, printerResponseCallbackFunc=None, *args):
         self._target = self.print_handler
         self._args = args
         self.__lock = threading.Lock()
+        self.printerID = printerID
         self.closing = False # A flag to indicate thread shutdown
         self.printer_commands = Queue.Queue(128)
         self.data_buffer = Queue.Queue(128)
@@ -46,7 +46,7 @@ class CpPrinter(threading.Thread):
         # Used to find the first 0x00 in the byte stream
         # Once found ignore that message and continue processing
         # onto the next 0x00 found. This is our first full message
-        self.ser = serial.Serial(CpDefs.PrinterPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
+        self.ser = serial.Serial(printerPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
         self.local_buffer = []
 
         self.response_parser = CpResponseParser()
