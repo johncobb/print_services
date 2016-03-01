@@ -23,7 +23,7 @@ def inetDataReceived(data):
 def main(argv):
 
     printerServices = []
-    for i in len(CpDefs.PrinterIds):
+    for i in xrange(len(CpDefs.PrinterIds)):
         printerID = CpDefs.PrinterIds[i]
         printerPort = CpDefs.PrinterPorts[i]
         printerThread = CpPrinter(printerID, printerPort, printerDataReceived)
