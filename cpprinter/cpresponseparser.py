@@ -10,11 +10,17 @@ class ResponseCodes:
 
     @classmethod
     def get_error(cls, nibble, value):
-        return cls.ERRORS[nibble][value]
+        if cls.ERRORS.has_key(nibble):
+            if cls.ERRORS[nibble].has_key(value):
+                return cls.ERRORS[nibble][value]
+        return ''
 
     @classmethod
     def get_warning(cls, nibble, value):
-        return cls.WARNINGS[nibble][value]
+        if cls.WARNINGS.has_key(nibble):
+            if cls.WARNINGS[nibble].has_key(value):
+                return cls.WARNINGS[nibble][value]
+        return ''
 
 
     # Map of Nibble # => {Nibble value => Error String}
