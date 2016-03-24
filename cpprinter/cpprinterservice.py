@@ -312,6 +312,7 @@ class CpPrinterService(threading.Thread):
                 if command == CpInetDefs.INET_GET_PRINTER_RESPONSE:
                     pass
                 else:
+                    print 'Enqueue command from cpprinterservice: ', command
                     self.printerThread.enqueue_command(command)
                     self.ack_queue.put(CpInetResponses.TOKEN_TCPACK)
 
