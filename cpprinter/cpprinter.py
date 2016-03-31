@@ -234,7 +234,7 @@ def printerDataReceived(data):
 
 def main(argv):
     
-    printerThread = CpPrinter(printerDataReceived)
+    printerThread = CpPrinter(printerDataReceived, CpDefs.PrinterPorts[0])
     printerThread.start()
     
 
@@ -272,10 +272,7 @@ def main(argv):
 
         elif user_input == 'test':
             in_file = file("../InteriorLabel-corrected.zpl", 'r')
-            str = in_file.read()
-            print str
-            printerThread.enqueue_command(str)
-            #printerThread.enqueue_command(in_file.read())
+            printerThread.enqueue_command(in_file.read())
             in_file.close()
 
         elif user_input == 'matrix':
