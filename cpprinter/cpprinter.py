@@ -32,9 +32,8 @@ class CpPrinterResult:
     Data = ""
 
 class CpPrinter(threading.Thread):
-    def __init__(self, printerID, printerPort, *args):
+    def __init__(self, printerID, printerPort):
         self._target = self.print_handler
-        # self._args = args
         self.__lock = threading.Lock()
         self.printerID = printerID
         self.closing = False # A flag to indicate thread shutdown
