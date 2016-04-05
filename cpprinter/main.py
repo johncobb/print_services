@@ -13,31 +13,20 @@ from cpdefs import CpDefs
 from cpprinterservice import CpPrinterService
 from cpprinter import CpPrinter
 
-def printerDataReceived(data):
-    print 'Callback function printerDataReceived ', data
-
-def inetDataReceived(data):
-    #print 'Callback function inetDataReceived ', data
-    pass
-
 def main(argv):
 
     printerServices = []
     for i in xrange(len(CpDefs.PrinterIds)):
         printerID = CpDefs.PrinterIds[i]
         printerPort = CpDefs.PrinterPorts[i]
-        printerThread = CpPrinter(printerID, printerPort, printerDataReceived)
+        printerThread = CpPrinter(printerID, printerPort)
         printerThread.start()
-        printerServiceThread = CpPrinterService(printerThread, inetDataReceived)
+
+        printerServiceThread = CpPrinterService(printerThread)
         printerServiceThread.start()
+
         printerServices.append(printerServiceThread)
     
-
-    # printerThread = CpPrinter(CpDefs.PrinterId, printerDataReceived)
-    # printerThread.start()
-
-    # printerServiceThread = CpPrinterService(printerThread, inetDataReceived)
-    # printerServiceThread.start()
 
     if CpDefs.RunAsService == True:
         print "running as service...\r\n"
@@ -63,18 +52,6 @@ def main(argv):
 
             print "Exiting app"
             break
-
-        elif input == '0':
-            printerServiceThread.enqueue_packet(CpDefs.PrinterId)
-        elif input == '1':
-            printerThread.enqueue_command("hello world\r")
-        elif input == 'aztec':
-            printerThread.enqueue_command("^XA^BY8,0^FT124,209^BON,8,N,0,N,1,^FDYourTextHere^FS^XZ\r")
-        elif input == 'matrix':
-            printerThread.enqueue_command("^XA^FO50,100^BXN,10,200^FDYourTextHere^FS^XZ\r")
-        elif input == 'qr':
-            printerThread.enqueue_command("^XA^FO100,100^BQN,2,10^FDYourTextHere^FS^XZ\r")
-
 
         time.sleep(.5)
 
