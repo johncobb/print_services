@@ -32,7 +32,7 @@ class CpPrinterResult:
     Data = ""
     
 class CpPrinter(threading.Thread):
-    def __init__(self, printerID, printerPort, printerResponseCallbackFunc=None, *args):
+    def __init__(self, printerID, printerPort, *args):
         self._target = self.print_handler
         self._args = args
         self.__lock = threading.Lock()
@@ -41,7 +41,6 @@ class CpPrinter(threading.Thread):
         self.printer_commands = Queue.Queue(128)
         self.data_buffer = Queue.Queue(128)
         self.printer_timeout = 0
-        self.printerResponseCallbackFunc = printerResponseCallbackFunc
         self.printerBusy = False
         self.printerResult = CpPrinterResult()
         # Used to find the first 0x00 in the byte stream
@@ -180,10 +179,6 @@ class CpPrinter(threading.Thread):
             print "The Printer queue is full"
             self.__lock.release()
     
-    def printer_send_at(self, callback):
-        self.enqueue_command(CpPrinterDefs.CMD_AT)
-        self.printerResponseCallbackFunc = callback
-   
 import sys
 import getopt
  
@@ -192,7 +187,7 @@ def printerDataReceived(data):
 
 def main(argv):
     
-    printerThread = CpPrinter(printerDataReceived)
+    printerThread = CpPrinter(CpDefs.PrinterIds[0])
     printerThread.start()
     
 
