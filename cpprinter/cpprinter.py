@@ -7,6 +7,7 @@ from cpdefs import CpDefs
 from cpdefs import CpAscii
 from cpzpldefs import CpZplDefs as ZPL
 from datetime import datetime
+import cpdebug
 #import Adafruit_BBIO.UART as UART
 #import Adafruit_BBIO.GPIO as GPIO
 
@@ -197,6 +198,7 @@ class CpPrinter(threading.Thread):
     def is_error(self, token):        
         return token.find(CpPrinterResponses.TOKEN_ERROR) > -1
         
+    @debug_func
     def printer_parse_result(self, result):
         
         printer_result = CpPrinterResult()
