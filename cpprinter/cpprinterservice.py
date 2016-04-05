@@ -755,13 +755,10 @@ class CpPrinterService(threading.Thread):
 
 if __name__ == '__main__':
 
-    def printerDataReceived():
-        print 'Callback function printerDataReceived ', data
-
-    printThread = CpPrinter(printerDataReceived)
+    printThread = CpPrinter()
     printThread.start()
 
-    inetThread = CpPrinterService(printThread, inetDataReceived)
+    inetThread = CpPrinterService(printThread)
     inetThread.start()
 
 
@@ -783,8 +780,7 @@ if __name__ == '__main__':
             print "Exiting app"
             break
         elif input == '0':
-            #inetThread.enqueue_packet(CpDefs.PrinterId)
-            inetThread.enqueue_packet(self.printerID)
+            inetThread.enqueue_packet(printThread.printerID)
         elif input == '1':
             printThread.enqueue_command("hello world\r")
 
