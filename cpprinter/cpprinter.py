@@ -7,7 +7,7 @@ from cpdefs import CpDefs
 from cpdefs import CpAscii
 from cpzpldefs import CpZplDefs as ZPL
 from datetime import datetime
-import cpdebug
+from cpdebug import debug_func
 #import Adafruit_BBIO.UART as UART
 #import Adafruit_BBIO.GPIO as GPIO
 
@@ -198,32 +198,6 @@ class CpPrinter(threading.Thread):
     def is_error(self, token):        
         return token.find(CpPrinterResponses.TOKEN_ERROR) > -1
         
-    @debug_func
-    def printer_parse_result(self, result):
-        
-        printer_result = CpPrinterResult()
-        
-        if result.find(CpPrinterResponses.TOKEN_OK) > -1:
-            printer_result.Data = result
-            printer_result.ResultCode = CpPrinterResultCode.RESULT_OK
-
-        elif result.find(CpPrinterResponses.TOKEN_ERROR) > -1:
-            printer_result.Data = result
-            printer_result.ResultCode = CpPrinterResultCode.RESULT_ERROR
-
-        elif result.find(CpPrinterResponses.TOKEN_CONNECT) > -1:
-            printer_result.Data = result
-            printer_result.ResultCode = CpPrinterResultCode.RESULT_CONNECT   
-
-        elif result.find(CpPrinterResponses.TOKEN_NOCARRIER) > -1:
-            printer_result.Data = result
-            printer_result.ResultCode = CpPrinterResultCode.RESULT_NOCARRIER
-
-        else:
-            printer_result.Data = result
-            printer_result.ResultCode = CpPrinterResultCode        
-            return printer_result
-
     def printer_send_at(self, callback):
         self.enqueue_command(CpPrinterDefs.CMD_AT)
         self.printerResponseCallbackFunc = callback
