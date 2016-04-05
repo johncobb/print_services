@@ -171,18 +171,6 @@ class CpPrinter(threading.Thread):
             print "The queue is full"
             self.__lock.release()
                         
-    def queue_get(self):
-        # TODO: Be aware of this forced return of 0x00
-        # will return one byte of 0x00 if you aren't checking
-        # qsize() before calling queue_get()
-        printer_data = "\x00"
-        
-        if self.data_buffer.qsize() > 0:
-            printer_data = self.data_buffer.get(True)
-            self.data_buffer.task_done()
-            
-        return printer_data
-                    
     def enqueue_command(self, cmd):
         try:
             self.printerBusy = True
@@ -192,12 +180,6 @@ class CpPrinter(threading.Thread):
             print "The Printer queue is full"
             self.__lock.release()
     
-    def is_timeout(self):
-        return datetime.now() >= self.printer_timeout
-    
-    def is_error(self, token):        
-        return token.find(CpPrinterResponses.TOKEN_ERROR) > -1
-        
     def printer_send_at(self, callback):
         self.enqueue_command(CpPrinterDefs.CMD_AT)
         self.printerResponseCallbackFunc = callback
