@@ -33,5 +33,9 @@ do
     fi
 done
 
-sed -i "/PrinterId/c\    PrinterIds = [$ids]" cpprinter/cpdefs.py
-sed -i "/PrinterPort/c\    PrinterPorts = [$ports]" cpprinter/cpdefs.py
+echo "class PrinterInfo:" > cpprinter/printerid.py
+echo "    PrinterIds = [$ids]" >> cpprinter/printerid.py
+echo "    PrinterPort = [$ports]" >> cpprinter/printerid.py
+
+#sed -i "/PrinterId/c\    PrinterIds = [$ids]" cpprinter/cpdefs.py
+#sed -i "/PrinterPort/c\    PrinterPorts = [$ports]" cpprinter/cpdefs.py
