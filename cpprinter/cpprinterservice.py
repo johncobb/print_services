@@ -133,6 +133,7 @@ class CpInetError:
     CloseErrors = 0
     CloseMax = 3
 
+
 class CpInetResult:
     ResultCode = 0
     Data = ""
@@ -186,7 +187,7 @@ class CpPrinterService(threading.Thread):
         self.current_state = self.states.INITIALIZE
 
         # Gradually increasing backoff as more errors occur
-        self.waitRetryBackoff = [5, 15, 30]
+        self.waitRetryBackoff = [5, 15, 30, 60]
         self.inet_stats = CpInetStats()
         self.inet_stats.LastSent = time
         self.printer_command_buffer = "" #stores incomplete printer commands
@@ -204,6 +205,14 @@ class CpPrinterService(threading.Thread):
 
     def run(self):
         self._target(*self._args)
+
+    def get_retry_backoff(self, num_errors):
+        """
+            Gets the current retry backoff time based on the
+            number of errors encountered.
+        """
+        return self.waitRetryBackoff[num_errors % 4]
+        
 
     def enter_state(self, new_state):
         """
@@ -515,8 +524,11 @@ class CpPrinterService(threading.Thread):
             return False
 
         # Allow some settle time before trying again
-        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.InitializeErrors]
-        time.sleep(self.waitRetryBackoff[self.inet_error.InitializeErrors])
+        #print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.InitializeErrors]
+        print 'Wait Retry Backoff %d sec.' % self.get_retry_backoff(self.inet_error.InitializeErrors)
+        
+        #time.sleep(self.waitRetryBackoff[self.inet_error.InitializeErrors])
+        time.sleep(self.get_retry_backoff(self.inet_error.InitializeErrors))
 
     def handle_inet_connect_error(self):
         """
@@ -537,8 +549,10 @@ class CpPrinterService(threading.Thread):
             return False
 
         # Allow some settle time before trying again
-        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.ConnectErrors]
-        time.sleep(self.waitRetryBackoff[self.inet_error.ConnectErrors])
+        # print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.ConnectErrors]
+        print 'Wait Retry Backoff %d sec.' % self.get_retry_backoff(self.inet_error.ConnectErrors)
+        # time.sleep(self.waitRetryBackoff[self.inet_error.ConnectErrors])
+        time.sleep(self.get_retry_backoff(self.inet_error.ConnectErrors))
 
 
     def handle_inet_send_error(self):
@@ -563,8 +577,10 @@ class CpPrinterService(threading.Thread):
             return False
 
         # Allow some settle time before trying again
-        print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.SendErrors]
-        time.sleep(self.waitRetryBackoff[self.inet_error.SendErrors])
+        # print 'Wait Retry Backoff %d sec.' % self.waitRetryBackoff[self.inet_error.SendErrors]
+        print 'Wait Retry Backoff %d sec.' % self.get_retry_backoff(self.inet_error.SendErrors)
+        # time.sleep(self.waitRetryBackoff[self.inet_error.SendErrors])
+        time.sleep(self.get_retry_backoff(self.inet_error.SendErrors))
 
 
     # inet_send_packet is explicitly called by inet_send
@@ -763,10 +779,10 @@ if __name__ == '__main__':
 
 
     while True:
-        input = raw_input(">> ")
-                # Python 3 users
+        user_input = raw_input(">> ").lower()
+                # Pythoninput 3 users
                 # input = input(">> ")
-        if input == 'exit' or input == 'EXIT':
+        if user_input == 'exit' or user_input == 'EXIT':
             inetThread.shutdown_thread()
 
             while(inetThread.isAlive()):
@@ -779,9 +795,9 @@ if __name__ == '__main__':
 
             print "Exiting app"
             break
-        elif input == '0':
+        elif user_input == '0':
             inetThread.enqueue_packet(printThread.printerID)
-        elif input == '1':
+        elif user_input == '1':
             printThread.enqueue_command("hello world\r")
 
         time.sleep(.5)
