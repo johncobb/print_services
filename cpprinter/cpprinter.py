@@ -7,7 +7,6 @@ from cpdefs import CpDefs
 from cpdefs import CpAscii
 from cpzpldefs import CpZplDefs as ZPL
 from datetime import datetime
-from cpdebug import debug_func
 #import Adafruit_BBIO.UART as UART
 #import Adafruit_BBIO.GPIO as GPIO
 
