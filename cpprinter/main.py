@@ -12,7 +12,7 @@ from datetime import datetime
 from cpdefs import CpDefs
 from cpprinterservice import CpPrinterService
 from cpprinter import CpPrinter
-from printerid import PrinterInfo
+from printerinfo import PrinterInfo
 
 def main(argv):
 
