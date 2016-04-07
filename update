@@ -1,4 +1,5 @@
 #!/bin/bash
 
 cd /home/pi/print_services
+git checkout .
 git pull origin master
