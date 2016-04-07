@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd /home/pi/print_services
+git pull origin master
