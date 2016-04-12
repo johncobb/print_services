@@ -2,11 +2,11 @@ import threading
 import time
 import Queue
 import serial
-from cpresponseparser import CpResponseParser
 from cpdefs import CpDefs
 from cpdefs import CpAscii
 from cpzpldefs import CpZplDefs as ZPL
 from datetime import datetime
+from printerinfo import PrinterInfo
 #import Adafruit_BBIO.UART as UART
 #import Adafruit_BBIO.GPIO as GPIO
 
@@ -80,20 +80,6 @@ class CpPrinter(threading.Thread):
         if CpDefs.LogVerbosePrinter:
             print 'sending printer command ', cmd
         self.ser.write(cmd)
-
-    def update_printer_status(self):
-        #This tells the printer to return it's status
-        self.ser.write(ZPL.ZplPrinterQueryStatus)
-
-        #Multiple responses are possible, but we only
-        # care about the ones from a status query
-        for response in self.process_response():
-            if ZPL.ZplPrinterStatusIndicator in response:
-                self.response_parser.parse_printer_status(response)
-
-        self.printer_errors = self.response_parser.errors
-        self.printer_warnings = self.response_parser.warnings
-
 
     def print_handler(self):
         """
@@ -184,7 +170,7 @@ def printerDataReceived(data):
     print 'Callback function printerDataReceived ', data
 
 def main(argv):
-    printerThread = CpPrinter(CpDefs.PrinterIds[0], CpDefs.PrinterPorts[0])
+    printerThread = CpPrinter(PrinterInfo.PrinterIds[0], PrinterInfo.PrinterPorts[0])
     printerThread.start()
 
 

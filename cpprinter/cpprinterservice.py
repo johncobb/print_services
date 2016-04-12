@@ -274,12 +274,6 @@ class CpPrinterService(threading.Thread):
         """
         #TODO: Seperate into logically correct states
 
-        errors = self.printerThread.printer_errors
-        warnings = self.printerThread.printer_warnings
-        if len(errors) != 0:
-            print "Printer Errors: ", errors
-        if len(warnings) != 0:
-            print "Printer Warnings: ", warnings
 
         #Process print job acks
         while self.ack_queue.qsize() > 0:
