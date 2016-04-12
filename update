@@ -1,5 +1,5 @@
 #!/bin/bash
 
 cd /home/pi/print_services
-git checkout .
-git pull
+/usr/bin/git checkout .
+/usr/bin/git pull
