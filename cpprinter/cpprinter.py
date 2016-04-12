@@ -47,9 +47,9 @@ class CpPrinter(threading.Thread):
         self.ser = serial.Serial(printerPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
         self.local_buffer = []
 
-        self.response_parser = CpResponseParser()
-        self.printer_errors = self.response_parser.errors
-        self.printer_warnings = self.response_parser.warnings
+        # self.response_parser = CpResponseParser()
+        # self.printer_errors = self.response_parser.errors
+        # self.printer_warnings = self.response_parser.warnings
 
         threading.Thread.__init__(self)
 
@@ -114,7 +114,7 @@ class CpPrinter(threading.Thread):
 
         while not self.closing:
 
-            self.update_printer_status()
+            # self.update_printer_status()
 
             if self.printer_commands.qsize() > 0:
                 printer_command = self.printer_commands.get(True)
