@@ -7,7 +7,6 @@ from cpdefs import CpDefs
 from cpdefs import CpAscii
 from cpzpldefs import CpZplDefs as ZPL
 from datetime import datetime
-from cpdebug import debug_func
 #import Adafruit_BBIO.UART as UART
 #import Adafruit_BBIO.GPIO as GPIO
 
@@ -185,8 +184,7 @@ def printerDataReceived(data):
     print 'Callback function printerDataReceived ', data
 
 def main(argv):
-
-    printerThread = CpPrinter(CpDefs.PrinterIds[0])
+    printerThread = CpPrinter(CpDefs.PrinterIds[0], CpDefs.PrinterPorts[0])
     printerThread.start()
 
 
@@ -224,10 +222,7 @@ def main(argv):
 
         elif user_input == 'test':
             in_file = file("../InteriorLabel-corrected.zpl", 'r')
-            str = in_file.read()
-            print str
-            printerThread.enqueue_command(str)
-            #printerThread.enqueue_command(in_file.read())
+            printerThread.enqueue_command(in_file.read())
             in_file.close()
 
         elif user_input == 'matrix':
