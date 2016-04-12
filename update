@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd /home/pi/print_services
+/usr/bin/git checkout .
+/usr/bin/git pull

@@ -24,3 +24,5 @@ ctags
 tags
 pylint.txt
 cpprinter/printerid.py
+printerid.py
+printerinfo.py

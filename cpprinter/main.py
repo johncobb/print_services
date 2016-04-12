@@ -12,13 +12,14 @@ from datetime import datetime
 from cpdefs import CpDefs
 from cpprinterservice import CpPrinterService
 from cpprinter import CpPrinter
+from printerinfo import PrinterInfo
 
 def main(argv):
 
     printerServices = []
-    for i in xrange(len(CpDefs.PrinterIds)):
-        printerID = CpDefs.PrinterIds[i]
-        printerPort = CpDefs.PrinterPorts[i]
+    for i in xrange(len(PrinterInfo.PrinterIds)):
+        printerID = PrinterInfo.PrinterIds[i]
+        printerPort = PrinterInfo.PrinterPorts[i]
         printerThread = CpPrinter(printerID, printerPort)
         printerThread.start()
 
