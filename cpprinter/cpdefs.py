@@ -12,7 +12,7 @@ class CpDefs:
     PrinterQueueTimeout = 5
     # PrinterPorts = ["/dev/ttyUSB0"]
     PrinterBaud = 9600
-    InetHost = "appserver02.cphandheld.com"
+    InetHost = "korevpn02.cphandheld.com"
     # InetHost = "96.27.198.215"
     InetPort = 1665
     InetTcpParms = "%s\r"
