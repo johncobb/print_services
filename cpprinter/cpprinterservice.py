@@ -277,9 +277,18 @@ class CpPrinterService(threading.Thread):
 
         #Process print job acks
         while self.ack_queue.qsize() > 0:
-            self.sock.send(CpDefs.InetTcpParms % self.ack_queue.get())
-            print "Sent ACK"
-            self.ack_queue.task_done()
+            try:
+                self.sock.send(CpDefs.InetTcpParms % self.ack_queue.get())
+                print "Sent ACK"
+                self.ack_queue.task_done()
+
+            except socket.error as err:
+                #A broken pipe just requires a connection reset. Other errors
+                #are considered fatal
+                if err.errno == errno.EPIPE:
+                    print "Broken Pipe. Resetting connection"
+                    self.enter_state(self.states.INITIALIZE)
+                    return
 
         #If the ack timeout is reached the thread should be recreated
         #This usually signifies a lost internet connection
