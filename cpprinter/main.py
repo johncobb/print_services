@@ -21,6 +21,7 @@ import urllib
 def main(argv):
 
     printerServices = []
+    myLogger = CpLogger()
     for i in xrange(len(PrinterInfo.PrinterIds)):
         printerID = PrinterInfo.PrinterIds[i]
         printerPort = PrinterInfo.PrinterPorts[i]
@@ -30,7 +31,7 @@ def main(argv):
         # printerServiceThread = CpPrinterService(printerThread)
         # printerServiceThread.start()
 
-        printerServices.append(HttpPrinter(printerThread))
+        printerServices.append(HttpPrinter(printerThread, myLogger))
 
     pollLoop(printerServices)
 
@@ -74,9 +75,10 @@ class HttpPrinter:
     Receives print commands from CPHandheld's printer RESTful service and
     enqueue's those commands in printerThread.
     """
-    def __init__(self, printerThread):
+    def __init__(self, printerThread, logger):
         self.printerThread = printerThread
         self.printerID = printerThread.printerID
+        self.logger = logger
 
     def poll(self):
         """
@@ -91,14 +93,14 @@ class HttpPrinter:
             url = "http://10.0.0.130/api/printer/getprintjob/1989"
             httpResponse = urllib.urlopen(url)
             if httpResponse.getcode() == HttpCodes.SUCCESS_NO_CONTENT:
-                logger.verbose("No Content")
+                self.logger.verbose("No Content")
                 return False
             printerCommand = "".join(httpResponse.readlines())
             self.printerThread.enqueue_printer(printerCommand)
-            logger.verbose("Received command: " + printerCommand)
+            self.logger.verbose("Received command: " + printerCommand)
             return True
         except IOError as e:
-            logger.logError()
+            self.logger.logError()
             #log "could not access server URL"
             pass
 
