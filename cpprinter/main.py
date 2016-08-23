@@ -10,6 +10,7 @@ import threading
 import time
 from datetime import datetime
 from cpdefs import CpDefs
+from cpdefs import HttpCodes
 from cpprinterservice import CpPrinterService
 from cpprinter import CpPrinter
 from printerinfo import PrinterInfo
@@ -90,9 +91,11 @@ class HttpPrinter:
             url = "http://10.0.0.130/api/printer/getprintjob/1989"
             httpResponse = urllib.urlopen(url)
             if httpResponse.getcode() == HttpCodes.SUCCESS_NO_CONTENT:
+                logger.verbose("No Content")
                 return False
             printerCommand = "".join(httpResponse.readlines())
             self.printerThread.enqueue_printer(printerCommand)
+            logger.verbose("Received command: " + printerCommand)
             return True
         except IOError as e:
             logger.logError()

@@ -9,16 +9,15 @@ class CpLogger:
     def __init__(self):
         self.LOG_DIR = "../logs/"
         self.FILE_FORMAT_STR = "%H%M_%d_%m_%Y.log"
-
         self.createLogDirectory(self.LOG_DIR)
 
-    def logError(self, message):
+    def error(self, message):
         self.log("ERROR", message)
 
-    def logWarning(self, message):
+    def warning(self, message):
         self.log("WARNING", message)
 
-    def logVerbose(self, message):
+    def verbose(self, message):
         if CpDefs.LogVerbosePrinter:
             self.log("VERBOSE", message)
 
@@ -27,6 +26,7 @@ class CpLogger:
         logString += str(datetime.now()) + '] '
         logString += message + '\n'
 
+        print(message)
         outFile = open(self.logFilePath(), "a")
         outFile.write(logString)
         outFile.close()
