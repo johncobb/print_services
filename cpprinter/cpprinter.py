@@ -37,7 +37,6 @@ class CpPrinter(threading.Thread):
         self.printerID = printerID
         self.closing = False # A flag to indicate thread shutdown
         self.printer_commands = Queue.Queue(128)
-        self.data_buffer = Queue.Queue(128)
         self.printer_timeout = 0
         self.printerBusy = False
         self.printerResult = CpPrinterResult()
@@ -79,6 +78,7 @@ class CpPrinter(threading.Thread):
     def printer_send(self, cmd):
         if CpDefs.LogVerbosePrinter:
             print 'sending printer command ', cmd
+        print("sending printer command")
         self.ser.write(cmd)
 
     def print_handler(self):
@@ -148,14 +148,6 @@ class CpPrinter(threading.Thread):
                 temp_buffer += temp_char
 
         return self.local_buffer
-
-    def enqueue_printer(self, cmd):
-        try:
-            self.data_buffer.put(cmd, block=True, timeout=1)
-        except:
-            self.__lock.acquire()
-            print "The queue is full"
-            self.__lock.release()
 
     def enqueue_command(self, cmd):
         try:

@@ -17,6 +17,7 @@ class CpDefs:
     # PrinterPorts = ["/dev/ttyUSB0"]
     PrinterBaud = 9600
     InetHost = "korevpn02.cphandheld.com"
+    API_URL = "http://10.0.0.130/api/printer/getprintjob/"
     # InetHost = "96.27.198.215"
     InetPort = 1665
     InetTcpParms = "%s\r"
