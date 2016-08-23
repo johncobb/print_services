@@ -14,7 +14,7 @@ from cpdefs import HttpCodes
 from cpprinterservice import CpPrinterService
 from cpprinter import CpPrinter
 from printerinfo import PrinterInfo
-import cplogger
+from cplogger import CpLogger
 import urllib
 
 
