@@ -15,6 +15,8 @@ from cpprinterservice import CpPrinterService
 from cpprinter import CpPrinter
 from printerinfo import PrinterInfo
 from cplogger import CpLogger
+import serial
+import Queue
 import urllib
 
 
@@ -26,8 +28,6 @@ def main(argv):
         printerID = PrinterInfo.PrinterIds[i]
         printerPort = PrinterInfo.PrinterPorts[i]
         printerThread = CpSyncPrinter(printerID, printerPort)
-        printerThread.start()
-
         printerServices.append(HttpPrinter(printerThread, myLogger))
 
     pollLoop(printerServices)
@@ -46,7 +46,7 @@ class CpSyncPrinter:
         self.printerSerial = serial.Serial(printerPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
 
     def send_command(self, command):
-        self.ser.write(command)
+        self.printerSerial.write(command)
 
 class HttpPrinter:
     """
@@ -57,7 +57,7 @@ class HttpPrinter:
         self.printerThread = printerThread
         self.printerID = printerThread.printerID
         self.logger = logger
-        self.apiUrl = CpDefs.API_URL + printerID
+        self.apiUrl = CpDefs.API_URL + self.printerID
 
     def poll(self):
         """
@@ -74,11 +74,14 @@ class HttpPrinter:
             if httpResponse.getcode() == HttpCodes.SUCCESS_NO_CONTENT:
                 self.logger.verbose("No Content")
                 return False
-            printerCommand = "".join(httpResponse.readlines())
-            printerCommand = printerCommand.replace('\\r\\n', '\n')
-            self.printerThread.enqueue_command(printerCommand)
-            self.logger.verbose("Received command: " + printerCommand)
-            return True
+            if httpResponse.getcode() == HttpCodes.SUCCESS:
+                printerCommand = "".join(httpResponse.readlines())
+                printerCommand = printerCommand.replace('\\r\\n', '\n')
+                self.printerThread.send_command(printerCommand)
+                self.logger.verbose("Received command: " + printerCommand)
+                return True
+            print httpResponse.getcode()
+            return False
         except IOError as e:
             self.logger.logError()
             #log "could not access server URL"
