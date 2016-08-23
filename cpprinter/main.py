@@ -96,7 +96,7 @@ class HttpPrinter:
                 self.logger.verbose("No Content")
                 return False
             printerCommand = "".join(httpResponse.readlines())
-            self.printerThread.enqueue_printer(printerCommand)
+            self.printerThread.enqueue_command(printerCommand)
             self.logger.verbose("Received command: " + printerCommand)
             return True
         except IOError as e:
