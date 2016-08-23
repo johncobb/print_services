@@ -87,7 +87,7 @@ class HttpPrinter:
         an error.
         """
         try:
-            url = "10.0.0.130/api/printer/getprintjob/1989"
+            url = "http://10.0.0.130/api/printer/getprintjob/1989"
             httpResponse = urllib.urlopen(url)
             if httpResponse.getcode() == HttpCodes.SUCCESS_NO_CONTENT:
                 return False
