@@ -96,8 +96,7 @@ class HttpPrinter:
                 self.logger.verbose("No Content")
                 return False
             printerCommand = "".join(httpResponse.readlines())
-            printCommand = printerCommand[11:]
-            printCommand = printerCommand[:-9]
+            printerCommand = printerCommand[11:-11]
             self.printerThread.enqueue_printer(printerCommand)
             self.logger.verbose("Received command: " + printerCommand)
             return True
