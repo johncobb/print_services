@@ -35,7 +35,7 @@ def main(argv):
 
 def pollLoop(printerList):
     while True:
-        for printer in printerServices:
+        for printer in printerList:
             while printer.poll():
                 pass # no action besides what poll does
         time.sleep(CpDefs.MESSAGE_CHECK_DELAY_S)
