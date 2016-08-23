@@ -46,6 +46,8 @@ class CpSyncPrinter:
         self.printerSerial = serial.Serial(printerPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
 
     def send_command(self, command):
+        if not self.printerSerial.isOpen():
+            self.printerSerial.open()
         self.printerSerial.write(command)
 
 class HttpPrinter:
@@ -76,7 +78,8 @@ class HttpPrinter:
                 return False
             if httpResponse.getcode() == HttpCodes.SUCCESS:
                 printerCommand = "".join(httpResponse.readlines())
-                printerCommand = printerCommand.replace('\\r\\n', '\n')
+                printerCommand = printerCommand.replace('\\r', '')
+                printerCommand = printerCommand.replace('\\n', '\n')
                 self.printerThread.send_command(printerCommand)
                 self.logger.verbose("Received command: " + printerCommand)
                 return True
