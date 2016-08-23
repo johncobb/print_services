@@ -1,8 +1,3 @@
-# deployment checklist:
-# 0. CpDefs.SiteId = "???"
-# 1. CpDefs.RunAsService = True
-# 2. CpDefs.PrinterPort = "/dev/ttyUSB0"
-# 3. CpDefs.WatchdogWaitNetworkInterface = True
 # 4. crontab: @reboot /usr/bin/python /home/pi/print_services/main.py > /home/pi/log.dat (optional logging)
 
 import sys, getopt
@@ -14,12 +9,10 @@ from cpdefs import HttpCodes
 from printerinfo import PrinterInfo
 from cplogger import CpLogger
 import serial
-import Queue
 import urllib
 
 
 def main(argv):
-
     httpListeners = []
     logger = CpLogger()
     for i in xrange(len(PrinterInfo.PrinterIds)):
@@ -43,7 +36,7 @@ class CpSyncPrinter:
         self.printerID = printerID
         self.printer_commands = Queue.Queue(128)
         self.printerSerial = serial.Serial(printerPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
-        if not serial.isOpen():
+        if not self.printerSerial.isOpen():
             self.logger.error("Serial connection not open on port: " + printerPort)
 
     def send_command(self, command):
@@ -69,6 +62,8 @@ class HttpListener:
         an error.
 
         HTTP 200 is returned if a printer command is available.
+
+        If a printer command is found it is forwarded to self.printer.send_command
         """
         try:
             httpResponse = urllib.urlopen(self.apiUrl)
@@ -91,6 +86,4 @@ class HttpListener:
 
 
 if __name__ == '__main__':
-
     main(sys.argv[1:])
-

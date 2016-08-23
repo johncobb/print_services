@@ -1,15 +1,12 @@
 import sys
 from datetime import datetime
 from cpdefs import CpDefs
+from cpdefs import CpLoggerConfig
 import os
 
-
 class CpLogger:
-
     def __init__(self):
-        self.LOG_DIR = "../logs/"
-        self.FILE_FORMAT_STR = "%H%M_%d_%m_%Y.log"
-        self.createLogDirectory(self.LOG_DIR)
+        self.createLogDirectory(CpLoggerConfig.LOG_DIRECTORY)
 
     def error(self, message):
         self.log("ERROR", message)
@@ -18,15 +15,18 @@ class CpLogger:
         self.log("WARNING", message)
 
     def verbose(self, message):
-        if CpDefs.LogVerbosePrinter:
+        if CpLoggerConfig.LOG_VERBOSE:
             self.log("VERBOSE", message)
+
+    def debug(self, message):
+        if CpDefs.DEBUG:
+            self.log("DEBUG", message)
 
     def log(self, levelString, message):
         logString = '[' + levelString + ': '
         logString += str(datetime.now()) + '] '
         logString += message + '\n'
 
-        print(message)
         outFile = open(self.logFilePath(), "a")
         outFile.write(logString)
         outFile.close()
@@ -40,6 +40,6 @@ class CpLogger:
 
 if __name__ == '__main__':
 
-    logger.logError("An Error")
-    logger.logWarning("A Warning")
-    logger.logVerbose("Verbose Logging")
+    logger.error("An Error")
+    logger.warning("A Warning")
+    logger.verbose("Verbose Logging")
