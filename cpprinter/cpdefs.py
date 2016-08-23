@@ -6,6 +6,10 @@ class CpEncoding:
     CpJsonCustomBase64 = 3
     CpTcpAscii = 4
 
+class HttpCodes:
+    SUCCESS = 200
+    SUCCESS_NO_CONTENT = 204
+
 class CpDefs:
     RunAsService = True
     PrinterQueryStatus = False
@@ -28,6 +32,7 @@ class CpDefs:
     LogVerbosePrinter = True
     LogVerboseInet = True
     LogEncodedMessage = False
+    MESSAGE_CHECK_DELAY_S = 3
     
 class CpSystemState:
     INITIALIZE = 0

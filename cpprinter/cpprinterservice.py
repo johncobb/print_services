@@ -6,7 +6,6 @@ import socket
 import mmap
 from cpdefs import CpDefs
 from cpdefs import CpAscii
-from cplog import CpLog
 from cpstats import CpInetStats
 from cpprinter import CpPrinter
 
@@ -179,7 +178,6 @@ class CpPrinterService(threading.Thread):
         self.remoteIp = None
         self.initialized = False
         self.inet_error = CpInetError()
-        self.log = CpLog()
 
         self.printerID = printerThread.printerID
 

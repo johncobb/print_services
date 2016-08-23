@@ -13,6 +13,9 @@ from cpdefs import CpDefs
 from cpprinterservice import CpPrinterService
 from cpprinter import CpPrinter
 from printerinfo import PrinterInfo
+import cplogger
+import urllib
+
 
 def main(argv):
 
@@ -23,38 +26,80 @@ def main(argv):
         printerThread = CpPrinter(printerID, printerPort)
         printerThread.start()
 
-        printerServiceThread = CpPrinterService(printerThread)
-        printerServiceThread.start()
+        # printerServiceThread = CpPrinterService(printerThread)
+        # printerServiceThread.start()
 
-        printerServices.append(printerServiceThread)
+        printerServices.append(HttpPrinter(printerThread))
+
+    pollLoop(printerServices)
+
+def pollLoop(printerList):
+    while True:
+        for printer in printerServices:
+            while printer.poll():
+                pass # no action besides what poll does
+        time.sleep(CpDefs.MESSAGE_CHECK_DELAY_S)
     
 
-    if CpDefs.RunAsService == True:
-        print "running as service...\r\n"
-        while True:
-            time.sleep(.005)
+    # if CpDefs.RunAsService == True:
+        # print "running as service...\r\n"
+        # while True:
+            # time.sleep(.005)
 
-    printerServiceThread = printerServices[0]
+    # printerServiceThread = printerServices[0]
 
-    print "running as console...\r\n"
-    while True:
-        input = raw_input(">> ").lower()
+    # print "running as console...\r\n"
+    # while True:
+        # input = raw_input(">> ").lower()
 
-        if input == 'exit':
-            printerServiceThread.shutdown_thread()
+        # if input == 'exit':
+            # printerServiceThread.shutdown_thread()
 
-            while printerServiceThread.isAlive():
-                time.sleep(.005)
+            # while printerServiceThread.isAlive():
+                # time.sleep(.005)
 
-            printerThread.shutdown_thread()
+            # printerThread.shutdown_thread()
 
-            while printerThread.isAlive():
-                time.sleep(.005)
+            # while printerThread.isAlive():
+                # time.sleep(.005)
 
-            print "Exiting app"
-            break
+            # print "Exiting app"
+            # break
 
-        time.sleep(.5)
+        # time.sleep(.5)
+
+class HttpPrinter:
+    """
+    Receives print commands from CPHandheld's printer RESTful service and
+    enqueue's those commands in printerThread.
+    """
+    def __init__(self, printerThread):
+        self.printerThread = printerThread
+        self.printerID = printerThread.printerID
+
+    def poll(self):
+        """
+        Polls the printer's URL in CPHandheld's printer RESTful service.
+
+        Returns true if a printer command is sent to the printer. False otherwise.
+
+        The response will be HTTP 204 if no content is received. This is not
+        an error.
+        """
+        try:
+            httpResponse = urllib.urlopen(printerURL)
+            if httpResponse.getcode() == HttpCodes.SUCCESS_NO_CONTENT:
+                return False
+            printerCommand = "".join(httpResponse.readlines())
+            self.printerThread.enqueue_printer(printerCommand)
+            return True
+        except IOError as e:
+            logger.logError()
+            #log "could not access server URL"
+            pass
+
+        return False
+
 
 if __name__ == '__main__':
 

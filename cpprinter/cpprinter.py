@@ -117,6 +117,9 @@ class CpPrinter(threading.Thread):
 
 
     def process_response(self):
+        """
+        Processes a query status response from the printer.
+        """
 
         time.sleep(.5)
         temp_buffer = ""
