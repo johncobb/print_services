@@ -1,5 +1,4 @@
-﻿**CPbegin**
-CT~~CD,~CC^~CT~
+﻿CT~~CD,~CC^~CT~
 ^XA~TA000~JSN^LT0^MNW^MTT^PON^PMN^LH0,0^JMA^PR4,4~SD15^JUS^LRN^CI0^XZ
 ^XA
 ^MMT
@@ -27,4 +26,3 @@
 ^FT849,232^A0I,64,55^FH\^FD{year} {make} {model} {color}^FS
 ^FT849,84^A0I,59,55^FH\^FD{vin}^FS
 ^PQ1,0,1,Y^XZ
-**CPend**
