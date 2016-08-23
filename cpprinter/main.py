@@ -34,7 +34,6 @@ class CpSyncPrinter:
     def __init__(self, printerID, printerPort, logger):
         self.logger = logger
         self.printerID = printerID
-        self.printer_commands = Queue.Queue(128)
         self.printerSerial = serial.Serial(printerPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
         if not self.printerSerial.isOpen():
             self.logger.error("Serial connection not open on port: " + printerPort)
