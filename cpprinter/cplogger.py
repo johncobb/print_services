@@ -38,8 +38,6 @@ class CpLogger:
         if not os.path.exists(os.path.dirname(dirPath)):
             os.makedirs(os.path.dirname(dirPath))
 
-logger = CpLogger()
-
 if __name__ == '__main__':
 
     logger.logError("An Error")
