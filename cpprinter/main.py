@@ -76,9 +76,8 @@ class HttpListener:
                 self.logger.verbose('No Content')
                 return False
         except IOError as e:
-            errorString = 'Could not access: ' + self.apiUrl + '\n' + \
-                          str(e) + ']'
-            self.logger.error('Could not access: ' + self.apiUrl)
+            errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e) + ']'
+            self.logger.error(errorString)
 
         return False
 
