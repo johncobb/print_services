@@ -19,7 +19,7 @@ def main(argv):
         printerID = PrinterInfo.PrinterIds[i]
         printerPort = PrinterInfo.PrinterPorts[i]
         printer = CpSyncPrinter(printerID, printerPort, logger)
-        httpListeners.append(HttpListener(printer, myLogger))
+        httpListeners.append(HttpListener(printer, logger))
 
     pollLoop(httpListeners)
 
