@@ -9,27 +9,31 @@ class CpLogger:
         self.createLogDirectory(CpLoggerConfig.LOG_DIRECTORY)
 
     def error(self, message):
-        self.log("ERROR", message)
+        self.log(self.buildLogMessage("ERROR", message))
 
     def warning(self, message):
-        self.log("WARNING", message)
+        self.log(self.buildLogMessage("WARNING", message))
 
     def verbose(self, message):
         if CpLoggerConfig.LOG_VERBOSE:
-            self.log("VERBOSE", message)
+            self.log(self.buildLogMessage("VERBOSE", message))
+            print self.buildLogMessage("VERBOSE", message)
 
     def debug(self, message):
         if CpDefs.DEBUG:
-            self.log("DEBUG", message)
+            self.log(self.buildLogMessage("DEBUG", message))
 
-    def log(self, levelString, message):
-        logString = '[' + levelString + ': '
-        logString += str(datetime.now()) + '] '
-        logString += message + '\n'
+    def log(self, logString):
+        # logString = '[' + levelString + ': '
+        # logString += str(datetime.now()) + '] '
+        # logString += message + '\n'
 
         outFile = open(self.logFilePath(), "a")
         outFile.write(logString)
         outFile.close()
+
+    def buildLogMessage(levelString, message):
+        return '[' + levelString + ': ' str(datetime.now()) + '] ' + message + '\n'
 
     def logFilePath(self):
         return CpLoggerConfig.LOG_DIRECTORY + \
