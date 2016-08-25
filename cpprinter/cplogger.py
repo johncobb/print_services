@@ -17,7 +17,6 @@ class CpLogger:
     def verbose(self, message):
         if CpLoggerConfig.LOG_VERBOSE:
             self.log(self.buildLogMessage("VERBOSE", message))
-            print self.buildLogMessage("VERBOSE", message)
 
     def debug(self, message):
         if CpDefs.DEBUG:
@@ -27,6 +26,7 @@ class CpLogger:
         # logString = '[' + levelString + ': '
         # logString += str(datetime.now()) + '] '
         # logString += message + '\n'
+        print logString
 
         outFile = open(self.logFilePath(), "a")
         outFile.write(logString)
