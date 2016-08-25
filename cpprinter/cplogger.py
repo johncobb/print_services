@@ -33,7 +33,7 @@ class CpLogger:
         outFile.close()
 
     def buildLogMessage(levelString, message):
-        return '[' + levelString + ': ' str(datetime.now()) + '] ' + message + '\n'
+        return '[' + levelString + ': ' + str(datetime.now()) + '] ' + message + '\n'
 
     def logFilePath(self):
         return CpLoggerConfig.LOG_DIRECTORY + \
