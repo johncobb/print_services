@@ -4,6 +4,11 @@ from cpdefs import CpDefs
 from cpdefs import CpLoggerConfig
 import os
 
+class CpLoggerConfig:
+    LOG_DIRECTORY = "../logs/"
+    FILE_FORMAT_STR = "%d_%m_%Y.log"
+    LOG_VERBOSE = True
+
 class CpLogger:
     def __init__(self):
         self.createLogDirectory(CpLoggerConfig.LOG_DIRECTORY)
@@ -42,6 +47,17 @@ class CpLogger:
     def createLogDirectory(self, dirPath):
         if not os.path.exists(os.path.dirname(dirPath)):
             os.makedirs(os.path.dirname(dirPath))
+
+    def purgeOldLogs(self):
+        """ Log files older than CpLoggerConfig.LOG_KEEP_DAYS days are
+        removed when this function is called.
+        """
+        from os import listdir
+        from os.path import isfile
+        logPath = CpLoggerConfig.LOG_DIRECTORY
+        logFiles = [f for f in listdir(logPath) if isfile(join(logPath, f))]
+        print logFiles
+        
 
 if __name__ == '__main__':
 
