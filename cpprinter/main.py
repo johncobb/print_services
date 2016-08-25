@@ -73,10 +73,12 @@ class HttpListener:
                 return True
 
             elif httpResponse.getcode() == HttpCodes.SUCCESS_NO_CONTENT:
-                self.logger.verbose("No Content")
+                self.logger.verbose('No Content')
                 return False
         except IOError as e:
-            self.logger.error("Could not access: " + self.apiUrl)
+            errorString = 'Could not access: ' + self.apiUrl + '\n' + \
+                          e.message
+            self.logger.error('Could not access: ' + self.apiUrl)
 
         return False
 
