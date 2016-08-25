@@ -1,4 +1,4 @@
-import sys, getopt
+iport sys, getopt
 import threading
 import time
 from datetime import datetime
@@ -26,7 +26,7 @@ def pollLoop(httpListeners, logger):
             while listener.poll():
                 pass # no action besides what poll does
 
-        logger.tryPurge()
+        logger.purgeOldLogs()
         time.sleep(CpDefs.MESSAGE_CHECK_DELAY_S)
 
 
