@@ -1,4 +1,4 @@
-iport sys, getopt
+import sys, getopt
 import threading
 import time
 from datetime import datetime
