@@ -32,7 +32,8 @@ class CpLogger:
         outFile.close()
 
     def logFilePath(self):
-        return CpDefs.LOG_DIRECTORY + datetime.now().strftime(self.FILE_FORMAT_STR)
+        return CpLoggerConfig.LOG_DIRECTORY +
+               datetime.now().strftime(CpLoggerConfig.FILE_FORMAT_STR)
 
     def createLogDirectory(self, dirPath):
         if not os.path.exists(os.path.dirname(dirPath)):
