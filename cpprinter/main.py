@@ -77,7 +77,7 @@ class HttpListener:
                 return False
         except IOError as e:
             errorString = 'Could not access: ' + self.apiUrl + '\n' + \
-                          e.message + e.errno + e.strerror + ']'
+                          str(e) + ']'
             self.logger.error('Could not access: ' + self.apiUrl)
 
         return False
