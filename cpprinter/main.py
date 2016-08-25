@@ -25,7 +25,7 @@ def main(argv):
 
 def pollLoop(httpListeners):
     while True:
-        for listener in httpListener:
+        for listener in httpListeners:
             while listener.poll():
                 pass # no action besides what poll does
         time.sleep(CpDefs.MESSAGE_CHECK_DELAY_S)
