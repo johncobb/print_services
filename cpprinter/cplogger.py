@@ -4,8 +4,8 @@ from cpdefs import CpDefs
 import os
 
 class CpLoggerConfig:
-    LOG_DIRECTORY = "../logs/"
-    FILE_FORMAT_STR = "%d_%m_%Y.log"
+    LOG_DIRECTORY = '../logs/'
+    FILE_FORMAT_STR = '%d_%m_%Y.log'
     LOG_KEEP_DAYS = 7 #Number of days log files are kept before being deleted
     LOG_VERBOSE = True
 
@@ -14,28 +14,24 @@ class CpLogger:
         self.createLogDirectory(CpLoggerConfig.LOG_DIRECTORY)
 
     def error(self, message):
-        self.log(self.buildLogMessage("ERROR", message))
+        self.log(self.buildLogMessage('ERROR', message))
 
     def warning(self, message):
-        self.log(self.buildLogMessage("WARNING", message))
+        self.log(self.buildLogMessage('WARNING', message))
 
     def verbose(self, message):
         if CpLoggerConfig.LOG_VERBOSE:
-            self.log(self.buildLogMessage("VERBOSE", message))
+            self.log(self.buildLogMessage('VERBOSE', message))
 
     def debug(self, message):
         if CpDefs.DEBUG:
-            self.log(self.buildLogMessage("DEBUG", message))
+            self.log(self.buildLogMessage('DEBUG', message))
 
     def log(self, logString):
-        # logString = '[' + levelString + ': '
-        # logString += str(datetime.now()) + '] '
-        # logString += message + '\n'
-        print logString
+        print logString,
 
-        outFile = open(self.logFilePath(), "a")
-        outFile.write(logString)
-        outFile.close()
+        with open(self.logFilePath(), 'a') as outFile:
+            outFile.write(logString)
 
     def buildLogMessage(self, levelString, message):
         return '[' + levelString + ': ' + str(datetime.now()) + '] ' + message + '\n'
