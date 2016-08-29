@@ -4,10 +4,15 @@ import time
 from datetime import datetime
 from cpdefs import CpDefs
 from cpdefs import HttpCodes
-from printerinfo import PrinterInfo
 from cplogger import CpLogger
 import serial
 import urllib
+
+try:
+    from printerinfo import PrinterInfo
+except ImportError as e:
+    print './setup script has not been run.'
+    print 'Check documentation for deployment instructions.'
 
 def main(argv):
     httpListeners = []
