@@ -13,6 +13,7 @@ try:
 except ImportError as e:
     print './setup script has not been run.'
     print 'Check documentation for deployment instructions.'
+    exit(0)
 
 def main(argv):
     httpListeners = []
