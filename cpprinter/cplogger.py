@@ -7,7 +7,7 @@ class CpLoggerConfig:
     LOG_DIRECTORY = '../logs/'
     FILE_FORMAT_STR = '%d_%m_%Y.log'
     LOG_KEEP_DAYS = 7 #Number of days log files are kept before being deleted
-    LOG_VERBOSE = True
+    LOG_VERBOSE = False
 
 class CpLogger:
     def __init__(self):
