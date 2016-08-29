@@ -4,7 +4,7 @@ from cpdefs import CpDefs
 import os
 
 class CpLoggerConfig:
-    LOG_DIRECTORY = '../logs/'
+    LOG_DIRECTORY = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../logs/')
     FILE_FORMAT_STR = '%d_%m_%Y.log'
     LOG_KEEP_DAYS = 7 #Number of days log files are kept before being deleted
     LOG_VERBOSE = False
@@ -69,7 +69,7 @@ class CpLogger:
         
 
 if __name__ == '__main__':
-
+    logger = CpLogger()
     logger.error("An Error")
     logger.warning("A Warning")
     logger.verbose("Verbose Logging")
