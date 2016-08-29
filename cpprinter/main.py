@@ -1,5 +1,3 @@
-# 4. crontab: @reboot /usr/bin/python /home/pi/print_services/main.py > /home/pi/log.dat (optional logging)
-
 import sys, getopt
 import threading
 import time
@@ -11,7 +9,6 @@ from cplogger import CpLogger
 import serial
 import urllib
 
-
 def main(argv):
     httpListeners = []
     logger = CpLogger()
@@ -19,16 +16,19 @@ def main(argv):
         printerID = PrinterInfo.PrinterIds[i]
         printerPort = PrinterInfo.PrinterPorts[i]
         printer = CpSyncPrinter(printerID, printerPort, logger)
-        httpListeners.append(HttpListener(printer, myLogger))
+        httpListeners.append(HttpListener(printer, logger))
 
-    pollLoop(httpListeners)
+    pollLoop(httpListeners, logger)
 
-def pollLoop(httpListeners):
+def pollLoop(httpListeners, logger):
     while True:
-        for listener in httpListener:
+        for listener in httpListeners:
             while listener.poll():
                 pass # no action besides what poll does
+
+        logger.purgeOldLogs()
         time.sleep(CpDefs.MESSAGE_CHECK_DELAY_S)
+
 
 class CpSyncPrinter:
     def __init__(self, printerID, printerPort, logger):
@@ -73,10 +73,11 @@ class HttpListener:
                 return True
 
             elif httpResponse.getcode() == HttpCodes.SUCCESS_NO_CONTENT:
-                self.logger.verbose("No Content")
+                self.logger.verbose('No Content')
                 return False
         except IOError as e:
-            self.logger.error("Could not access: " + self.apiUrl)
+            errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e) + ']'
+            self.logger.error(errorString)
 
         return False
 
