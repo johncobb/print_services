@@ -6,7 +6,7 @@ from cpdefs import CpDefs
 from cpdefs import HttpCodes
 from cplogger import CpLogger
 import serial
-import urllib
+import urllib2
 
 try:
     from printerinfo import PrinterInfo
@@ -72,7 +72,7 @@ class HttpListener:
         """
         request = generateHttpRequest(self.apiUrl)
         try:
-            httpResponse = urllib.urlopen(request)
+            httpResponse = urllib2.urlopen(request)
 
             if httpResponse.getcode() == HttpCodes.SUCCESS:
                 printerCommand = self.fromHttpResponse(httpResponse)
@@ -89,11 +89,11 @@ class HttpListener:
         return False
 
     def generateHttpRequest(self, url):
-        """Attaches HTTP header to a url through a urllib.request.Request object.
+        """Attaches HTTP header to a url through a urllib2.request.Request object.
         This ensures that the server knows the version of software the printer
         is on in order to prevent print queue build up on version change.
         """
-        return urllib.request.Request(url, headers={'userAgent' : CpDefs.VERSION})
+        return urllib2.Request(url, headers={'User-Agent' : CpDefs.VERSION})
 
     def fromHttpResponse(self, httpResponse):
         return "".join(httpResponse.readlines()).replace('\\r\\n', '\n')
