@@ -70,8 +70,9 @@ class HttpListener:
 
         If a printer command is found it is forwarded to self.printer.send_command
         """
+        request = generateHttpRequest(self.apiUrl)
         try:
-            httpResponse = urllib.urlopen(self.apiUrl)
+            httpResponse = urllib.urlopen(request)
 
             if httpResponse.getcode() == HttpCodes.SUCCESS:
                 printerCommand = self.fromHttpResponse(httpResponse)
@@ -86,6 +87,13 @@ class HttpListener:
             self.logger.error(errorString)
 
         return False
+
+    def generateHttpRequest(self, url):
+        """Attaches HTTP header to a url through a urllib.request.Request object.
+        This ensures that the server knows the version of software the printer
+        is on in order to prevent print queue build up on version change.
+        """
+        return urllib.request.Request(url, headers={'userAgent' : CpDefs.VERSION})
 
     def fromHttpResponse(self, httpResponse):
         return "".join(httpResponse.readlines()).replace('\\r\\n', '\n')
