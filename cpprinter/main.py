@@ -70,7 +70,7 @@ class HttpListener:
 
         If a printer command is found it is forwarded to self.printer.send_command
         """
-        request = generateHttpRequest(self.apiUrl)
+        request = self.generateHttpRequest(self.apiUrl)
         try:
             httpResponse = urllib2.urlopen(request)
 
