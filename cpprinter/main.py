@@ -93,7 +93,7 @@ class HttpListener:
         This ensures that the server knows the version of software the printer
         is on in order to prevent print queue build up on version change.
         """
-        return urllib2.Request(url, headers={'User-Agent' : CpDefs.VERSION})
+        return urllib2.Request(url, headers={'User-Agent' : 'CPH/' + CpDefs.VERSION})
 
     def fromHttpResponse(self, httpResponse):
         return "".join(httpResponse.readlines()).replace('\\r\\n', '\n')
