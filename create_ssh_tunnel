@@ -1,2 +1,0 @@
-#!/bin/bash
-/usr/bin/ssh -N -R 2222:localhost:22 johncobb@appserver05.cphandheld.com  > /home/pi/ssh.log
