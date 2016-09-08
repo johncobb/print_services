@@ -6,5 +6,5 @@ class CpDefs:
     PrinterBaud = 9600
     API_URL = "http://unison.cphandheld.com/api/printer/getprintjob/"
     MESSAGE_CHECK_DELAY_S = 3
-    DEBUG = True
+    DEBUG = False
     VERSION = '1.0'
