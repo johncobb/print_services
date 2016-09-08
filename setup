@@ -15,7 +15,7 @@ ports=""
 
 for (( c=0; c<$num; c++))
 do
-    echo "Enter printer ID $c: "
+    echo "Enter printer ID $(($c+1)): "
     read id
     id=`printf "%04d" $id`
     while [[ ! $id =~ $regex ]]; do
@@ -36,6 +36,8 @@ done
 echo "class PrinterInfo:" > cpprinter/printerinfo.py
 echo "    PrinterIds = [$ids]" >> cpprinter/printerinfo.py
 echo "    PrinterPorts = [$ports]" >> cpprinter/printerinfo.py
+
+crontab crontab.setup
 
 #sed -i "/PrinterId/c\    PrinterIds = [$ids]" cpprinter/cpdefs.py
 #sed -i "/PrinterPort/c\    PrinterPorts = [$ports]" cpprinter/cpdefs.py
