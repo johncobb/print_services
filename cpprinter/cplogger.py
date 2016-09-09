@@ -23,6 +23,9 @@ class CpLogger:
         if CpLoggerConfig.LOG_VERBOSE:
             self.log(self.buildLogMessage('VERBOSE', message))
 
+    def status(self, message):
+        self.log(self.buildLogMessage('STATUS', message))
+
     def debug(self, message):
         if CpDefs.DEBUG:
             self.log(self.buildLogMessage('DEBUG', message))

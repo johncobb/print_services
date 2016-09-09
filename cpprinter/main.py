@@ -40,12 +40,24 @@ class CpSyncPrinter:
     def __init__(self, printerID, printerPort, logger):
         self.logger = logger
         self.printerID = printerID
-        self.printerSerial = serial.Serial(printerPort, baudrate=CpDefs.PrinterBaud, parity='N', stopbits=1, bytesize=8, xonxoff=0, rtscts=0)
+        self.printerSerial = serial.Serial(printerPort,
+                                           baudrate=CpDefs.PrinterBaud,
+                                           parity='N',
+                                           stopbits=1,
+                                           bytesize=8,
+                                           xonxoff=0,
+                                           rtscts=0)
+
         if not self.printerSerial.isOpen():
             self.logger.error("Serial connection not open on port: " + printerPort)
 
     def send_command(self, command):
-        self.printerSerial.write(command)
+        try:
+            self.printerSerial.write(command)
+            self.logger.status('Wrote print command to printer')
+        except serial.SerialException as e:
+            self.logger.error('Exception: ' + str(e) +
+                              ' on printer command send.')
 
 class HttpListener:
     """
