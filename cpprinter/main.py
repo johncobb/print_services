@@ -52,7 +52,6 @@ class CpSyncPrinter:
             self.logger.error("Serial connection not open on port: " + printerPort)
 
     def send_command(self, command):
-        command = self.stripBeginEnd(command)
         try:
             self.printerSerial.write(command)
             self.logger.status('Wrote print command to printer')
@@ -60,14 +59,6 @@ class CpSyncPrinter:
             self.logger.error('Exception: ' + str(e) +
                               ' on printer command send.')
 
-    def stripBeginEnd(self, strCommand):
-        """Old labels were preceded by '**CPbegin**' and ended
-        with '**CPend**'. This function returns a command with
-        those delimiters removed. If strCommand does not have these
-        headers then this function is a NoOp
-        strCommand -- String -- A ZPL printer command
-        """
-        return strCommand.replace('**CPbegin**', '').replace('**CPend**', '')
 
 
 class HttpListener:
@@ -98,7 +89,8 @@ class HttpListener:
             httpResponse = urllib2.urlopen(request)
 
             if httpResponse.getcode() == HttpCodes.SUCCESS:
-                printerCommand = self.fromHttpResponse(httpResponse)
+                printerCommand = self.decodeHttpResponse(httpResponse)
+                printerCommand = self.stripBeginEnd(printerCommand)
                 self.printer.send_command(printerCommand)
                 return True
 
@@ -106,8 +98,8 @@ class HttpListener:
                 self.logger.verbose('No Content')
                 return False
         except IOError as e:
-            errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e) + ']'
-            self.logger.error(errorString)
+            errorStr = 'Could not access: ' + self.apiUrl + '\n' + str(e) + ']'
+            self.logger.error(errorStr)
 
         return False
 
@@ -116,10 +108,26 @@ class HttpListener:
         This ensures that the server knows the version of software the printer
         is on in order to prevent print queue build up on version change.
         """
-        return urllib2.Request(url, headers={'User-Agent' : 'CPH/' + CpDefs.VERSION})
+        return urllib2.Request(url,
+                               headers={'User-Agent': 'CPH/' + CpDefs.VERSION})
 
-    def fromHttpResponse(self, httpResponse):
-        return "".join(httpResponse.readlines()).replace('\\r\\n', '\n')
+    def decodeHttpResponse(self, httpResponse):
+        """Http encodes '\n' and '\r\n' as '\\n'sdf and '\\r\\n' respectively.
+        This replaces those as well as removes the begin/end tokens which
+        existed in legacy labels for old labels.
+        """
+        decoded = httpResponse.read().replace('\\r\\n', '\n')
+        decoded = decoded.replace('\\n', '\n')
+        return self.stripBeginEnd(decoded)
+
+    def stripBeginEnd(self, strCommand):
+        """Old labels were preceded by '**CPbegin**' and ended
+        with '**CPend**'. This function returns a command with
+        those delimiters removed. If strCommand does not have these
+        headers then this function is a NoOp
+        strCommand -- String -- A ZPL printer command
+        """
+        return strCommand.replace('**CPbegin**', '').replace('**CPend**', '')
 
 
 if __name__ == '__main__':
