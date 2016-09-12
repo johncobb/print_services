@@ -1,12 +1,12 @@
 import sys, getopt
 import threading
 import time
+import urllib2
 from datetime import datetime
 from cpdefs import CpDefs
 from cpdefs import HttpCodes
 from cplogger import CpLogger
 import serial
-import urllib2
 
 try:
     from printerinfo import PrinterInfo
@@ -52,12 +52,23 @@ class CpSyncPrinter:
             self.logger.error("Serial connection not open on port: " + printerPort)
 
     def send_command(self, command):
+        command = self.stripBeginEnd(command)
         try:
             self.printerSerial.write(command)
             self.logger.status('Wrote print command to printer')
         except serial.SerialException as e:
             self.logger.error('Exception: ' + str(e) +
                               ' on printer command send.')
+
+    def stripBeginEnd(self, strCommand):
+        """Old labels were preceded by '**CPbegin**' and ended
+        with '**CPend**'. This function returns a command with
+        those delimiters removed. If strCommand does not have these
+        headers then this function is a NoOp
+        strCommand -- String -- A ZPL printer command
+        """
+        return strCommand.replace('**CPbegin**', '').replace('**CPend**', '')
+
 
 class HttpListener:
     """
