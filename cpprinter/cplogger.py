@@ -52,18 +52,31 @@ class CpLogger:
             from os import listdir
             from os.path import isfile, join
             logPath = CpLoggerConfig.LOG_DIRECTORY
-            logFiles = [f for f in listdir(logPath) if isfile(join(logPath, f))]
-            fileTimes = [(f, self.logFileToDatetime(f)) for f in logFiles if self.logFileToDatetime(f) != None]
+
+            # get elements in log directory
+            logFiles = [f for f in listdir(logPath)
+                        if isfile(join(logPath, f))]
+
+            # get timestamps of each file
+            fileTimes = [(f, self.logFileToDatetime(f))
+                         for f in logFiles
+                         if self.logFileToDatetime(f) is not None]
+
             now = datetime.now()
-            filesToRemove = [f for (f, t) in fileTimes if (now - t).days > CpLoggerConfig.LOG_KEEP_DAYS]
-            map(lambda f: os.remove(join(CpLoggerConfig.LOG_DIRECTORY, f)), filesToRemove)
-        except OSError as e:
+
+            # Get files older than CpLoggerConfig.LOG_KEEP_DAYS
+            filesToRemove = [f for (f, t) in fileTimes
+                             if (now - t).days > CpLoggerConfig.LOG_KEEP_DAYS]
+
+            map(lambda f: os.remove(join(CpLoggerConfig.LOG_DIRECTORY, f)),
+                filesToRemove)
+        except OSError:
             self.warning('Failed to purge old log files.')
 
     def logFileToDatetime(self, fileName):
         try:
             return datetime.strptime(fileName, CpLoggerConfig.FILE_FORMAT_STR)
-        except e:
+        except:
             self.warning("File in LOG_DIRECTORY didn't match format. Found: " + fileName)
         return None
         

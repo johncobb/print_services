@@ -30,7 +30,7 @@ def pollLoop(httpListeners, logger):
     while True:
         for listener in httpListeners:
             while listener.poll():
-                pass # no action besides what poll does
+                pass  # no action besides what poll does
 
         logger.purgeOldLogs()
         time.sleep(CpDefs.MESSAGE_CHECK_DELAY_S)
@@ -49,7 +49,7 @@ class CpSyncPrinter:
 
 class HttpListener:
     """
-    Polls the RESTful service URL for available print jobs and sends them 
+    Polls the RESTful service URL for available print jobs and sends them
     """
     def __init__(self, printer, logger):
         self.printer = printer
@@ -82,8 +82,11 @@ class HttpListener:
             elif httpResponse.getcode() == HttpCodes.SUCCESS_NO_CONTENT:
                 self.logger.verbose('No Content')
                 return False
+
+            else:
+                self.logger.warning('Unexpected HTTP Response: ' + str(httpResponse.getcode()))
         except IOError as e:
-            errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e) + ']'
+            errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e)
             self.logger.error(errorString)
 
         return False
@@ -93,7 +96,7 @@ class HttpListener:
         This ensures that the server knows the version of software the printer
         is on in order to prevent print queue build up on version change.
         """
-        return urllib2.Request(url, headers={'User-Agent' : 'CPH/' + CpDefs.VERSION})
+        return urllib2.Request(url, headers={'User-Agent': 'CPH/' + CpDefs.VERSION})
 
     def fromHttpResponse(self, httpResponse):
         return "".join(httpResponse.readlines()).replace('\\r\\n', '\n')
