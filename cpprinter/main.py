@@ -85,6 +85,7 @@ class HttpListener:
 
             else:
                 self.logger.warning('Unexpected HTTP Response: ' + str(httpResponse.getcode()))
+                return False
         except IOError as e:
             errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e)
             self.logger.error(errorString)
