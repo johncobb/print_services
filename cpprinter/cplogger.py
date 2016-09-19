@@ -26,12 +26,8 @@ class CpLogger:
     def status(self, message):
         self.log(self.buildLogMessage('STATUS', message))
 
-    def debug(self, message):
-        if CpDefs.DEBUG:
-            self.log(self.buildLogMessage('DEBUG', message))
-
     def log(self, logString):
-        print logString,
+        print(logString),
 
         with open(self.logFilePath(), 'a') as outFile:
             outFile.write(logString)
