@@ -16,8 +16,10 @@ except ImportError as e:
     exit(0)
 
 def main(argv):
-    httpListeners = []
     logger = CpLogger()
+    logger.status('**********SYSTEM BOOT**********')
+
+    httpListeners = []
     for i in xrange(len(PrinterInfo.PrinterIds)):
         printerID = PrinterInfo.PrinterIds[i]
         printerPort = PrinterInfo.PrinterPorts[i]
@@ -101,6 +103,7 @@ class HttpListener:
             else:
                 self.logger.warning('Unexpected HTTP Response: ' + str(httpResponse.getcode()))
                 return False
+
         except IOError as e:
             errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e)
             self.logger.error(errorString)
