@@ -16,8 +16,10 @@ except ImportError as e:
     exit(0)
 
 def main(argv):
-    httpListeners = []
     logger = CpLogger()
+    logger.status('**********SYSTEM BOOT**********')
+
+    httpListeners = []
     for i in xrange(len(PrinterInfo.PrinterIds)):
         printerID = PrinterInfo.PrinterIds[i]
         printerPort = PrinterInfo.PrinterPorts[i]
@@ -30,7 +32,7 @@ def pollLoop(httpListeners, logger):
     while True:
         for listener in httpListeners:
             while listener.poll():
-                pass # no action besides what poll does
+                pass  # no action besides what poll does
 
         logger.purgeOldLogs()
         time.sleep(CpDefs.MESSAGE_CHECK_DELAY_S)
@@ -63,7 +65,7 @@ class CpSyncPrinter:
 
 class HttpListener:
     """
-    Polls the RESTful service URL for available print jobs and sends them 
+    Polls the RESTful service URL for available print jobs and sends them
     """
     def __init__(self, printer, logger):
         self.printer = printer
@@ -97,9 +99,14 @@ class HttpListener:
             elif httpResponse.getcode() == HttpCodes.SUCCESS_NO_CONTENT:
                 self.logger.verbose('No Content')
                 return False
+
+            else:
+                self.logger.warning('Unexpected HTTP Response: ' + str(httpResponse.getcode()))
+                return False
+
         except IOError as e:
-            errorStr = 'Could not access: ' + self.apiUrl + '\n' + str(e) + ']'
-            self.logger.error(errorStr)
+            errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e)
+            self.logger.error(errorString)
 
         return False
 
