@@ -42,24 +42,39 @@ class CpSyncPrinter:
     def __init__(self, printerID, printerPort, logger):
         self.logger = logger
         self.printerID = printerID
-        self.printerSerial = serial.Serial(printerPort,
-                                           baudrate=CpDefs.PrinterBaud,
-                                           parity='N',
-                                           stopbits=1,
-                                           bytesize=8,
-                                           xonxoff=0,
-                                           rtscts=0)
+        self.printerPort = printerPort
+        self.printerSerial = serial.Serial(printerPort)
 
-        if not self.printerSerial.isOpen():
+        if not self.isConnected():
             self.logger.error("Serial connection not open on port: " + printerPort)
 
+    @staticmethod
+    def isConnected(printerSerialConnection):
+        """The raspberry pi has a USB to RS 232 serial adapter attached
+        to it which is then connected to the printer. Since the serial
+        cable can be unplugged while the USB cable remains connected it
+        makes the pyserial.Serial.isOpen method fail to properly determine
+        if the device is connected. It also makes other methods such as
+        writiable() fail to determine if the printer is actually connected.
+
+        So, by the RS232 standard the DTR and DSR are on all the time as
+        they are used to indicate the device is powered on. Given this,
+        we can use the getDSR() method to determine if the device is
+        truly connected.
+        """
+        return printerSerialConnection.getDSR()
+
     def send_command(self, command):
-        try:
-            self.printerSerial.write(command)
-            self.logger.status('Wrote print command to printer')
-        except serial.SerialException as e:
-            self.logger.error('Exception: ' + str(e) +
-                              ' on printer command send.')
+        with serial.Serial(self.printerPort) as printerSerial:
+            if not self.isConnected(printerSerial):
+                self.logger.error('Could not establish connection to the printer.')
+                return
+            try:
+                printerSerial.write(command)
+                self.logger.status('Wrote print command to printer')
+            except serial.SerialException as e:
+                self.logger.error('Exception: ' + str(e) +
+                                  ' on printer command send.')
 
 
 
