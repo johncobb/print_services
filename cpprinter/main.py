@@ -43,10 +43,6 @@ class CpSyncPrinter:
         self.logger = logger
         self.printerID = printerID
         self.printerPort = printerPort
-        self.printerSerial = serial.Serial(printerPort)
-
-        if not self.isConnected():
-            self.logger.error("Serial connection not open on port: " + printerPort)
 
     @staticmethod
     def isConnected(printerSerialConnection):
@@ -69,6 +65,7 @@ class CpSyncPrinter:
             if not self.isConnected(printerSerial):
                 self.logger.error('Could not establish connection to the printer.')
                 return
+
             try:
                 printerSerial.write(command)
                 self.logger.status('Wrote print command to printer')
