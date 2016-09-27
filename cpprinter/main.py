@@ -61,17 +61,20 @@ class CpSyncPrinter:
         return printerSerialConnection.getDSR()
 
     def send_command(self, command):
-        with serial.Serial(self.printerPort) as printerSerial:
-            if not self.isConnected(printerSerial):
-                self.logger.error('Could not establish connection to the printer.')
-                return
+        try:
+            with serial.Serial(self.printerPort) as printerSerial:
+                if not self.isConnected(printerSerial):
+                    self.logger.error('Could not establish connection to the printer.')
+                    return
 
-            try:
-                printerSerial.write(command)
-                self.logger.status('Wrote print command to printer')
-            except serial.SerialException as e:
-                self.logger.error('Exception: ' + str(e) +
-                                  ' on printer command send.')
+                try:
+                    printerSerial.write(command)
+                    self.logger.status('Wrote print command to printer')
+                except serial.SerialException as e:
+                    self.logger.error('Exception: ' + str(e) +
+                                      ' on printer command send.')
+        except IOError as e:
+            self.logger.error('Failed to open serial port: ' + str(e))
 
 
 
