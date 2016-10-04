@@ -1,43 +1,31 @@
 #!/bin/bash
 
-regex="^[[:digit:]]{4}$"
-regex2="^[1234]$"
+# Execute with: ./this-script $PrinterIds...
+# Meaning, any number of space seperated numbers
 
-echo "How many printers will be attached to this Pi? "
-read num
-while [[ ! $num =~ $regex2 ]]; do
-    echo "Invalid number. Try again. "
-    read num
-done
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+printerIDs=( "$@" )
 
-ids=""
-ports=""
-
-for (( c=0; c<$num; c++))
+# Formats printer IDs with leading zeros
+for i in ${!printerIDs[@]}
 do
-    echo "Enter printer ID $(($c+1)): "
-    read id
-    id=`printf "%04d" $id`
-    while [[ ! $id =~ $regex ]]; do
-        echo "Invalid Printer Id. Must be a number between 0000-9999"
-        read id
-        id=`printf "%04d" $id`
-    done
-    if [[ -z $ids ]];
-    then
-        ids="\"$id\""
-        ports="\"/dev/ttyUSB$c\""
-    else
-        ids="$ids, \"$id\""
-        ports="$ports, \"/dev/ttyUSB$c\""
-    fi
+    printerIDs[$i]=`printf "%04d" ${printerIDs[$i]}`
 done
 
-echo "class PrinterInfo:" > cpprinter/printerinfo.py
-echo "    PrinterIds = [$ids]" >> cpprinter/printerinfo.py
-echo "    PrinterPorts = [$ports]" >> cpprinter/printerinfo.py
+# Initialize Printer ID lists and device files
+ids="'${printerIDs[0]}'"
+dev_files="'/dev/ttyUSB0'"
 
-crontab crontab.setup
+# Constructs the Lists of python strings for output
+for i in `seq 1 $((${#printerIDs[*]} - 1))`
+do
+    ids="$ids, '${printerIDs[$i]}'"
+    dev_files="$dev_files, '/dev/ttyUSB$i'"
+done
 
-#sed -i "/PrinterId/c\    PrinterIds = [$ids]" cpprinter/cpdefs.py
-#sed -i "/PrinterPort/c\    PrinterPorts = [$ports]" cpprinter/cpdefs.py
+OUT_FILE="$SCRIPT_DIR/cpprinter/printerinfo.py"
+
+echo "class PrinterInfo:" > $OUT_FILE
+echo "    PrinterIds = [$ids]" >> $OUT_FILE
+echo "    PrinterPorts = [$dev_files]" >> $OUT_FILE
+
