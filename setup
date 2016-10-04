@@ -1,7 +1,16 @@
 #!/bin/bash
 
 # Execute with: ./this-script $PrinterIds...
-# Meaning, any number of space seperated numbers
+# Meaning, any number of space seperated numbers representing PrinterIDs
+
+# This script initializes the printer id python script that ids are
+# read from. It also initializes the crontab
+
+if [ -z $# ]
+then
+    echo "[ERROR]: Requires at least one printer ID argument."
+    exit
+fi
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 printerIDs=( "$@" )
@@ -29,3 +38,4 @@ echo "class PrinterInfo:" > $OUT_FILE
 echo "    PrinterIds = [$ids]" >> $OUT_FILE
 echo "    PrinterPorts = [$dev_files]" >> $OUT_FILE
 
+crontab "$SCRIPT_DIR/crontab.setup"
