@@ -14,7 +14,7 @@ def getCommands():
 
         'set /config/firewall/portfwd [{"enabled": true, "ip_address": "192.168.0.2", "lan_port_offt": 22, "name": "PiPrinter", "protocol": "both", "wan_port_end": 2022, "wan_port_start":2022}]',
 
-        'set /config/firewall/remote_admin/enabled {"enabled":true, "port":8080, "restrict_ips":false, "secure_only":true, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}'
+        'set /config/firewall/remote_admin {"enabled":true, "port":8080, "restrict_ips":false, "secure_only":true, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}'
 
         #'set /config/system/users/0/password ' + NEW_PASSWORD_HASH,
     ]
@@ -42,7 +42,7 @@ def getSshpassCommand():
 
 def getPiMacAddress():
     with open('/sys/class/net/eth0/address', 'r') as macFile:
-        return macFile.read()
+        return macFile.read().replace('\n', '')
 
 if __name__ == '__main__':
     main()
