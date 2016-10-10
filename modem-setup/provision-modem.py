@@ -8,13 +8,17 @@ def getCommands():
     return [
         #'set /config/system/users/0/password ' + NEW_PASSWORD_HASH,
         'set /config/system/timezone "+6"',
+
         'set /config/firewall/macfilter/enabled "true"',
+
+        'set /config/dhcpd/reserve [{}]'
         'set /config/dhcpd/reserve/0/ip6_address null',
         'set /config/dhcpd/reserve/0/hostname "raspberrypi"',
         'set /config/dhcpd/reserve/0/ip_address "192.168.0.2"',
         'set /config/dhcpd/reserve/0/mac ' + getPiMacAddress(),
         'set /config/dhcpd/reserve/0/duid "01:b8:27:eb:fb:ca:79"',
 
+        'set /config/firewall/portfwd/ [{}]'
         'set /config/firewall/portfwd/0/enabled true',
         'set /config/firewall/portfwd/0/ip_address "192.168.0.2"',
         'set /config/firewall/portfwd/0/lan_port_offt 22',
