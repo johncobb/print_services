@@ -1,6 +1,10 @@
 #!/bin/bash
 
-MODEM_PASSWORD=`./get-modem-pass.py`
+DEFAULT_PASSWORD=`./get-modem-pass.py`
+NEW_PASSWORD_HASH=''
 
-sshpass -p $MODEM_PASSWORD ssh -oStrictHostKeyChecking=no admin@cp "set /config/system/users/0/password \$1\$19dea550\$rlEEoW3nT29UXyfY/tuUEg=="
+
 ########## DHCP Reservation ##########
+
+#### Change Password ####
+sshpass -p $DEFAULT_PASSWORD ssh -oStrictHostKeyChecking=no admin@cp "set /config/system/users/0/password \"$NEW_PASSWORD_HASH\""
