@@ -1,14 +1,14 @@
+import os
 import subprocess
 import platform # platform.system()
 
 NEW_PASSWORD_HASH = '"blah"'
 
 def getCommands():
-    commands =  [
+    return [
         #'set /config/system/users/0/password ' + NEW_PASSWORD_HASH,
         'set /config/system/timezone "+6"'
     ]
-    return ['"' + command + '"' for command in commands]
 
 def main():
     
