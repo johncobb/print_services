@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import os
 
 arpLines = os.popen('arp').readlines()
