@@ -1,1 +1,0 @@
-@reboot /usr/bin/python /home/pi/print_services/cpprinter/main.py

@@ -1,0 +1,2 @@
+@reboot /usr/bin/python /home/pi/print_services/cpprinter/main.py
+@reboot /usr/bin/python /home/pi/print_services/cpprinter/modem-setup/provision-modem.py
