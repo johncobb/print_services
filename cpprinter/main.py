@@ -44,29 +44,9 @@ class CpSyncPrinter:
         self.printerID = printerID
         self.printerPort = printerPort
 
-    @staticmethod
-    def isConnected(printerSerialConnection):
-        """The raspberry pi has a USB to RS 232 serial adapter attached
-        to it which is then connected to the printer. Since the serial
-        cable can be unplugged while the USB cable remains connected it
-        makes the pyserial.Serial.isOpen method fail to properly determine
-        if the device is connected. It also makes other methods such as
-        writiable() fail to determine if the printer is actually connected.
-
-        So, by the RS232 standard the DTR and DSR are on all the time as
-        they are used to indicate the device is powered on. Given this,
-        we can use the getDSR() method to determine if the device is
-        truly connected.
-        """
-        return printerSerialConnection.getDSR()
-
     def send_command(self, command):
         try:
             with serial.Serial(self.printerPort) as printerSerial:
-                if not self.isConnected(printerSerial):
-                    self.logger.error('Could not establish connection to the printer.')
-                    return
-
                 try:
                     printerSerial.write(command)
                     self.logger.status('Wrote print command to printer')
