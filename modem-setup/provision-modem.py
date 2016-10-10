@@ -11,12 +11,7 @@ def getCommands():
 
         'set /config/firewall/macfilter/enabled true',
 
-        # 'set /config/dhcpd/reserve [{}]'
-        # 'set /config/dhcpd/reserve/0/ip6_address null',
-        # 'set /config/dhcpd/reserve/0/hostname "raspberrypi"',
-        # 'set /config/dhcpd/reserve/0/ip_address "192.168.0.2"',
-        # 'set /config/dhcpd/reserve/0/mac ' + getPiMacAddress(),
-        # 'set /config/dhcpd/reserve/0/duid "01:b8:27:eb:fb:ca:79"',
+        'set /config/dhcpd/reserve [{"ip6_address": null, "hostname":"raspberrypi", "ip_address":"192.168.0.2", "mac":"' + getPiMacAddress() + '", "duid":"01:b8:27:eb:fb:ca:79"}]'
 
         'set /config/firewall/portfwd [{"enabled": true, "ip_address": "192.168.0.2", "lan_port_offt": 22, "name": "PiPrinter", "protocol": "both", "wan_port_end": 2022, "wan_port_start":2022}]'
     ]
