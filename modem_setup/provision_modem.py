@@ -1,6 +1,7 @@
 import os
 import subprocess
 import time
+import re
 import urllib2 as url
 import platform # platform.system()
 
@@ -22,7 +23,9 @@ def getCommands():
 
         'set /config/firewall/remote_admin {"enabled":true, "port":8080, "restrict_ips":false, "secure_only":true, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}',
 
-        'set /config/firewall/ssh_admin {"enabled": true, "port": 22, "weak_ciphers": false, "remote_access": true}'
+        'set /config/firewall/ssh_admin {"enabled": true, "port": 22, "weak_ciphers": false, "remote_access": true}',
+
+        'set /config/system/ui_activated true'
     ]
 
 def main():
@@ -33,11 +36,13 @@ def main():
         if subprocess.call(sshpassCommand + [command]) != 0:
             pass
 
+    ip = getOutwardIp()
+    print("IP: " + ip)
+
     subprocess.call(sshpassCommand + ['reboot']) # send reboot cmd to modem
     setPassword()
 
-    requestPrinterIds()
-
+    requestPrinterIds(ip)
 
 def setPassword():
     """Attempts to reset the password until successful. The modem is
@@ -70,7 +75,14 @@ def getPiMacAddress():
     with open('/sys/class/net/eth0/address', 'r') as macFile:
         return macFile.read().replace('\n', '')
 
-def requestPrinterIds():
+def getOutwardIp():
+    result = os.popen("".join(getSshpassCommand()) + '"get /status/wan/ipinfo/ip_address"')
+    foundIp = re.search('".*"', result)
+    if foundIp:
+        return foundIp(0)
+    raise Exception("Could not retreive IP")
+
+def requestPrinterIds(outwardIp):
     pass
 
 if __name__ == '__main__':
