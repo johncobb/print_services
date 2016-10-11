@@ -28,7 +28,7 @@ def main():
 
     for command in commands:
         if subprocess.call(sshpassCommand + [command]) != 0:
-            return # Bail if any command fails
+            pass
 
     subprocess.call(sshpassCommand + ['reboot']) # send reboot cmd to modem
     setPassword()
@@ -45,7 +45,12 @@ def getModemDefaultPassword():
     """The modem's default password is the
     last 8 digits of its mac address
     """
-    arpLines = [line.split() for line in subprocess.check_output(['arp']).split('\n')[:-1]]
+    arpRet = subprocess.check_output(['arp'])
+    while arpRet == '':
+        arpRet = subprocess.check_output(['arp'])
+        time.sleep(5)
+
+    arpLines = [line.split() for line in arpRet.split('\n')[:-1]]
     arpDict = {key: val for key, val in zip(arpLines[0], arpLines[1])}
     return arpDict['HWaddress'].replace(':', '')[-8:]
 
