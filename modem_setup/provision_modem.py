@@ -1,6 +1,7 @@
 import os
 import subprocess
 import time
+import urllib2 as url
 import platform # platform.system()
 
 NEW_PASSWORD_HASH = '""'
@@ -19,7 +20,9 @@ def getCommands():
 
         'set /config/firewall/portfwd [{"enabled": true, "ip_address": "192.168.0.2", "lan_port_offt": 22, "name": "PiPrinter", "protocol": "both", "wan_port_end": 2022, "wan_port_start":2022}]',
 
-        'set /config/firewall/remote_admin {"enabled":true, "port":8080, "restrict_ips":false, "secure_only":true, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}'
+        'set /config/firewall/remote_admin {"enabled":true, "port":8080, "restrict_ips":false, "secure_only":true, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}',
+
+        'set /config/firewall/ssh_admin {"enabled": true, "port": 22, "weak_ciphers": false, "remote_access": true}'
     ]
 
 def main():
@@ -32,6 +35,9 @@ def main():
 
     subprocess.call(sshpassCommand + ['reboot']) # send reboot cmd to modem
     setPassword()
+
+    requestPrinterIds()
+
 
 def setPassword():
     """Attempts to reset the password until successful. The modem is
@@ -63,6 +69,9 @@ def getSshpassCommand():
 def getPiMacAddress():
     with open('/sys/class/net/eth0/address', 'r') as macFile:
         return macFile.read().replace('\n', '')
+
+def requestPrinterIds():
+    pass
 
 if __name__ == '__main__':
     main()
