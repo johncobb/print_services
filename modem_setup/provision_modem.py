@@ -36,9 +36,6 @@ def main():
         if subprocess.call(sshpassCommand + [command]) != 0:
             pass
 
-    ip = getOutwardIp()
-    print("IP: " + ip)
-
     subprocess.call(sshpassCommand + ['reboot']) # send reboot cmd to modem
     setPassword()
 
