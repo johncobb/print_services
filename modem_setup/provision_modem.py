@@ -45,8 +45,7 @@ def getModemDefaultPassword():
     """The modem's default password is the
     last 8 digits of its mac address
     """
-    arpLines = os.popen('arp').readlines()
-    arpLines = [line.split() for line in os.popen('arp').readlines()]
+    arpLines = [line.split() for line in subprocess.check_output(['arp']).split('\n')[:-1]]
     arpDict = {key: val for key, val in zip(arpLines[0], arpLines[1])}
     return arpDict['HWaddress'].replace(':', '')[-8:]
 
