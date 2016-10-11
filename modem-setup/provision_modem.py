@@ -1,5 +1,6 @@
 import os
 import subprocess
+import time
 import platform # platform.system()
 
 NEW_PASSWORD_HASH = '""'
@@ -18,9 +19,7 @@ def getCommands():
 
         'set /config/firewall/portfwd [{"enabled": true, "ip_address": "192.168.0.2", "lan_port_offt": 22, "name": "PiPrinter", "protocol": "both", "wan_port_end": 2022, "wan_port_start":2022}]',
 
-        'set /config/firewall/remote_admin {"enabled":true, "port":8080, "restrict_ips":false, "secure_only":true, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}',
-
-        'set /config/system/users/0/password ' + NEW_PASSWORD_HASH,
+        'set /config/firewall/remote_admin {"enabled":true, "port":8080, "restrict_ips":false, "secure_only":true, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}'
     ]
 
 def main():
@@ -28,7 +27,19 @@ def main():
     sshpassCommand = getSshpassCommand()
 
     for command in commands:
-        subprocess.call(sshpassCommand + [command])
+        if subprocess.call(sshpassCommand + [command]) != 0:
+            return # Bail if any command fails
+
+    subprocess.call(sshpassCommand + ['reboot']) # send reboot cmd to modem
+    setPassword()
+
+def setPassword():
+    """Attempts to reset the password until successful. The modem is
+    rebooting so this may take several attempts.
+    """
+    passwordCommand = 'set /config/system/users/0/password ' + NEW_PASSWORD_HASH
+    while subprocess.call(sshpassCommand + [passwordCommand]) != 0:
+        time.sleep(5)
 
 def getModemDefaultPassword():
     """The modem's default password is the
