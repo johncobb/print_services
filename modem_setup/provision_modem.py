@@ -49,16 +49,16 @@ def setPassword():
     rebooting so this may take several attempts.
     """
     passwordCommand = 'set /config/system/users/0/password ' + NEW_PASSWORD_HASH
-    while subprocess.call(sshpassCommand + [passwordCommand]) != 0:
+    while subprocess.call(getSshpassCommand() + [passwordCommand]) != 0:
         time.sleep(5)
 
 def getModemDefaultPassword():
     """The modem's default password is the
     last 8 digits of its mac address
     """
-    arpRet = subprocess.check_output(['arp'])
+    arpRet = subprocess.check_output(['/usr/sbin/arp'])
     while arpRet == '':
-        arpRet = subprocess.check_output(['arp'])
+        arpRet = subprocess.check_output(['/usr/sbin/arp'])
         time.sleep(5)
 
     arpLines = [line.split() for line in arpRet.split('\n')[:-1]]
