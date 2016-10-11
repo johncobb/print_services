@@ -76,7 +76,7 @@ def getPiMacAddress():
         return macFile.read().replace('\n', '')
 
 def getOutwardIp():
-    result = os.popen("".join(getSshpassCommand()) + '"get /status/wan/ipinfo/ip_address"')
+    result = os.popen("".join(getSshpassCommand()) + '"get /status/wan/ipinfo/ip_address"')[0]
     foundIp = re.search('".*"', result)
     if foundIp:
         return foundIp(0)
