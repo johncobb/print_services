@@ -37,8 +37,11 @@ def main():
         if subprocess.call(sshpassCommand + [command]) != 0:
             pass
 
+    ip = getOutwardIp()
+
     subprocess.call(sshpassCommand + ['reboot']) # send reboot cmd to modem
-    blockUntilModemFound()
+    print('Sleep for 60 seconds.')
+    time.sleep(60)
     setPassword()
 
     ids = requestPrinterIds(ip)
@@ -56,7 +59,9 @@ def blockUntilModemFound():
     """The arp function blocks until a non null response is detected. When
     this is detected the modem is present. So calling arp is all that
     is necessary."""
+    print('Searching for modem...')
     arp()
+    print('Found modem.')
 
 def arp():
     """The arp command finds devices connected to ethernet to the raspberry
@@ -89,12 +94,13 @@ def getPiMacAddress():
         return macFile.read().replace('\n', '')
 
 def getOutwardIp():
-    result = os.popen("".join(getSshpassCommand()) + '"get /status/wan/ipinfo/ip_address"').readlines()
-    result = result[0]
-    foundIp = re.search('".*"', result)
-    if foundIp:
-        return foundIp(0)
-    raise Exception("Could not retreive IP")
+    while True:
+	result = os.popen(" ".join(getSshpassCommand()) + ' "get /status/wan/ipinfo/ip_address"').readlines()
+	result = result[0]
+	foundIp = re.search('".*"', result)
+	if foundIp:
+	    return foundIp.group(0)
+	time.sleep(5)
 
 def requestPrinterIds(outwardIp):
     return ["1989"]
