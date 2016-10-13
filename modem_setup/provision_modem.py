@@ -30,6 +30,7 @@ def getCommands():
 
 def main():
     commands = getCommands()
+    blockUntilModemFound()
     sshpassCommand = getSshpassCommand()
 
     for command in commands:
@@ -37,26 +38,41 @@ def main():
             pass
 
     subprocess.call(sshpassCommand + ['reboot']) # send reboot cmd to modem
+    blockUntilModemFound()
     setPassword()
 
-    requestPrinterIds(ip)
+    ids = requestPrinterIds(ip)
+    subprocess.call(['../setup'] + ids)
 
 def setPassword():
     """Attempts to reset the password until successful. The modem is
     rebooting so this may take several attempts.
     """
+    blockUntilModemFound()
     passwordCommand = 'set /config/system/users/0/password ' + NEW_PASSWORD_HASH
-    while subprocess.call(getSshpassCommand() + [passwordCommand]) != 0:
+    subprocess.call(getSshpassCommand() + [passwordCommand])
+
+def blockUntilModemFound():
+    """The arp function blocks until a non null response is detected. When
+    this is detected the modem is present. So calling arp is all that
+    is necessary."""
+    arp()
+
+def arp():
+    """The arp command finds devices connected to ethernet to the raspberry
+    pi. In this case that will only ever be the modem. So, this function
+    blocks until the modem is found, then returns the output of arp."""
+    arpRet = subprocess.check_output(['/usr/sbin/arp'])
+    while arpRet == '':
+        arpRet = subprocess.check_output(['/usr/sbin/arp'])
         time.sleep(5)
+    return arpRet
 
 def getModemDefaultPassword():
     """The modem's default password is the
     last 8 digits of its mac address
     """
-    arpRet = subprocess.check_output(['/usr/sbin/arp'])
-    while arpRet == '':
-        arpRet = subprocess.check_output(['/usr/sbin/arp'])
-        time.sleep(5)
+    arpRet = arp()
 
     arpLines = [line.split() for line in arpRet.split('\n')[:-1]]
     arpDict = {key: val for key, val in zip(arpLines[0], arpLines[1])}
@@ -81,7 +97,7 @@ def getOutwardIp():
     raise Exception("Could not retreive IP")
 
 def requestPrinterIds(outwardIp):
-    pass
+    return ["1989"]
 
 if __name__ == '__main__':
     main()
