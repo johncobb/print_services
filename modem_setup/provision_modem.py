@@ -25,7 +25,9 @@ def getCommands():
 
         'set /config/firewall/ssh_admin {"enabled": true, "port": 22, "weak_ciphers": false, "remote_access": true}',
 
-        'set /config/system/ui_activated true'
+        'set /config/system/ui_activated true',
+
+        'set /config/firewall/macfilter {"enabled": true, "macs": [{"addr": ' + getPiMacAddress() + '}], "whitelist": true}'
     ]
 
 def main():
@@ -34,6 +36,7 @@ def main():
     sshpassCommand = getSshpassCommand()
 
     for command in commands:
+        print('Calling: ' + " ".join(sshpassCommand + [command]))
         if subprocess.call(sshpassCommand + [command]) != 0:
             pass
 
