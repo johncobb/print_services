@@ -5,7 +5,8 @@ import re
 import urllib2 as url
 import platform # platform.system()
 
-NEW_PASSWORD_HASH = '""'
+NEW_PASSWORD_HASH = ''
+PRINTER_ID_API_URL = ''
 
 def getCommands():
     """List of commands to be executed on the modem for initial setup.
@@ -52,6 +53,7 @@ def main():
 
     ids = requestPrinterIds(ip)
     subprocess.call(['../setup'] + ids)
+    os.system('sudo shutdown -r now')
 
 def setPassword():
     """Attempts to reset the password until successful. The modem is
@@ -62,11 +64,13 @@ def setPassword():
     subprocess.call(getSshpassCommand() + [passwordCommand])
 
 def blockUntilModemFound():
-    """The arp function blocks until a non null response is detected. When
-    this is detected the modem is present. So calling arp is all that
-    is necessary."""
+    """wget -q --spider google.com will return 0 whenever there is
+    internet connection (more specifically, when google is reachable)
+    to determine when there is an internet connection.
+    """
     print('Searching for modem...')
-    arp()
+    while(subprocess.call('wget -q --spider http://google.com'.split()) != 0):
+        pass
     print('Found modem.')
 
 def arp():
@@ -102,6 +106,7 @@ def getPiMacAddress():
 def getOutwardIp():
     while True:
 	result = os.popen(" ".join(getSshpassCommand()) + ' "get /status/wan/ipinfo/ip_address"').readlines()
+        print('IP Result: ' + str(result))
 	result = result[0]
 	foundIp = re.search('".*"', result)
 	if foundIp:
@@ -109,7 +114,12 @@ def getOutwardIp():
 	time.sleep(5)
 
 def requestPrinterIds(outwardIp):
-    return ["1989"]
+    while True:
+        try:
+            resp = url.urlopen(url.Request(PRINTER_ID_API_URL))
+            return resp.readlines()
+        except url.URLError as e:
+            print('Printer ID Request Failed.')
 
 if __name__ == '__main__':
     main()
