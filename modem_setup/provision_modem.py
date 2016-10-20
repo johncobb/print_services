@@ -39,12 +39,12 @@ def main():
     blockUntilModemFound()
     sshpassCommand = getSshpassCommand()
 
+    ip = getOutwardIp()
+
     for command in commands:
         print('Calling: ' + " ".join(sshpassCommand + [command]))
         if subprocess.call(sshpassCommand + [command]) != 0:
-            pass
-
-    ip = getOutwardIp()
+            time.sleep(2)
 
     subprocess.call(sshpassCommand + ['reboot']) # send reboot cmd to modem
     print('Sleep for 60 seconds.')
@@ -87,8 +87,8 @@ def getModemDefaultPassword():
     """The modem's default password is the
     last 8 digits of its mac address
     """
+    blockUntilModemFound()
     arpRet = arp()
-
     arpLines = [line.split() for line in arpRet.split('\n')[:-1]]
     arpDict = {key: val for key, val in zip(arpLines[0], arpLines[1])}
     return arpDict['HWaddress'].replace(':', '')[-8:]
@@ -104,10 +104,15 @@ def getPiMacAddress():
         return macFile.read().replace('\n', '')
 
 def getOutwardIp():
+    blockUntilModemFound()
     while True:
 	result = os.popen(" ".join(getSshpassCommand()) + ' "get /status/wan/ipinfo/ip_address"').readlines()
-        print('IP Result: ' + str(result))
-	result = result[0]
+        try:
+	    result = result[0]
+        except IndexError as e:
+            print('Could not retrieve IP. Try again.')
+            time.sleep(1)
+            continue
 	foundIp = re.search('".*"', result)
 	if foundIp:
 	    return foundIp.group(0)
