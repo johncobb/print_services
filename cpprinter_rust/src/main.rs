@@ -29,17 +29,17 @@ fn handle_connection(stream: &mut TcpStream) {
 }
 
 fn print_label(label: String) -> io::Result<()> {
-    let mut port = serial::open("/dev/ttyUSB0").unwrap();
-    try!(port.reconfigure(&|settings| {
-        try!(settings.set_baud_rate(serial::Baud9600));
-        settings.set_char_size(serial::Bits8);
-        settings.set_parity(serial::ParityNone);
-        settings.set_stop_bits(serial::Stop1);
-        settings.set_flow_control(serial::FlowNone);
-        Ok(())
-    }));
+    //let mut port = serial::open("/dev/ttyUSB0").unwrap();
+    //try!(port.reconfigure(&|settings| {
+        //try!(settings.set_baud_rate(serial::Baud9600));
+        //settings.set_char_size(serial::Bits8);
+        //settings.set_parity(serial::ParityNone);
+        //settings.set_stop_bits(serial::Stop1);
+        //settings.set_flow_control(serial::FlowNone);
+        //Ok(())
+    //}));
 
-    try!(port.write(label.as_bytes()));
+    //try!(port.write(label.as_bytes()));
 
     println!("{}", label);
     return Ok(());

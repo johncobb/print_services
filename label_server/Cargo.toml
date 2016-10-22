@@ -1,0 +1,6 @@
+[package]
+name = "label_server"
+version = "0.1.0"
+authors = ["Evan Higgins <evan.higgins06@gmail.com>"]
+
+[dependencies]
