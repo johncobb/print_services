@@ -4,6 +4,7 @@ import (
     "fmt"
     "os"
     "net"
+    "github.com/tarm/serial"
 )
 
 func main() {
@@ -27,12 +28,30 @@ func main() {
 }
 
 func handleConnection(conn net.Conn) {
-    buff := make([]byte, 1024)
+    buff := make([]byte, 8192)
 
     reqLen, err := conn.Read(buff)
     if err != nil {
         fmt.Println("Error reading: ", err.Error())
     }
+    WriteToSerial(string(buff[:reqLen]))
     fmt.Println(string(buff[:reqLen]))
     conn.Close()
+}
+
+func WriteToSerial(message string) {
+    serialConfig := &serial.Config{Name: "ttyUSB0", Baud: 9600}
+
+    ser, err := serial.OpenPort(serialConfig)
+    if err != nil {
+        println(err.Error())
+        return
+    }
+    defer ser.Close()
+    bytes, err := ser.Write([]byte(message))
+    if err != nil {
+        println("Error writing to serial connection. ", err.Error())
+        return
+    }
+    println(string(bytes) + "bytes written")
 }
