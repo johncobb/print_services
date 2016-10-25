@@ -4,7 +4,8 @@ import (
     "fmt"
     "os"
     "net"
-    "github.com/tarm/serial"
+    //"github.com/tarm/serial"
+    "github.com/mikepb/go-serial"
 )
 
 func main() {
@@ -40,18 +41,37 @@ func handleConnection(conn net.Conn) {
 }
 
 func WriteToSerial(message string) {
-    serialConfig := &serial.Config{Name: "ttyUSB0", Baud: 9600}
-
-    ser, err := serial.OpenPort(serialConfig)
+    options := serial.RawOptions
+    options.BitRate = 9600
+    options.Mode = 1
+    p, err := options.Open("/dev/ttyUSB0")
     if err != nil {
         println(err.Error())
         return
     }
-    defer ser.Close()
-    bytes, err := ser.Write([]byte(message))
+    defer p.Close()
+
+    bytes, err := p.WriteString(message)
     if err != nil {
-        println("Error writing to serial connection. ", err.Error())
+        println(err.Error())
         return
     }
-    println(string(bytes) + "bytes written")
+    fmt.Printf("%d bytes written\n", bytes)
 }
+
+//func WriteToSerial(message string) {
+    //serialConfig := &serial.Config{Name: "ttyUSB0", Baud: 9600}
+
+    //ser, err := serial.OpenPort(serialConfig)
+    //if err != nil {
+        //println(err.Error())
+        //return
+    //}
+    //defer ser.Close()
+    //bytes, err := ser.Write([]byte(message))
+    //if err != nil {
+        //println("Error writing to serial connection. ", err.Error())
+        //return
+    //}
+    //println(string(bytes) + "bytes written")
+//}
