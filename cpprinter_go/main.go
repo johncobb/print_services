@@ -5,7 +5,6 @@ import (
     "os"
     "net"
     "github.com/tarm/serial"
-    //"github.com/mikepb/go-serial"
 )
 
 func main() {
@@ -40,27 +39,8 @@ func handleConnection(conn net.Conn) {
     conn.Close()
 }
 
-//func WriteToSerial(message string) {
-    //options := serial.RawOptions
-    //options.BitRate = 9600
-    //options.Mode = 1
-    //p, err := options.Open("/dev/ttyUSB0")
-    //if err != nil {
-        //println(err.Error())
-        //return
-    //}
-    //defer p.Close()
-
-    //bytes, err := p.WriteString(message)
-    //if err != nil {
-        //println(err.Error())
-        //return
-    //}
-    //fmt.Printf("%d bytes written\n", bytes)
-//}
-
 func WriteToSerial(message string) {
-    serialConfig := &serial.Config{Name: "ttyUSB0", Baud: 9600}
+    serialConfig := &serial.Config{Name: "/dev/ttyUSB0", Baud: 9600}
 
     ser, err := serial.OpenPort(serialConfig)
     if err != nil {
