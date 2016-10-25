@@ -35,7 +35,6 @@ func handleConnection(conn net.Conn) {
         fmt.Println("Error reading: ", err.Error())
     }
     WriteToSerial(string(buff[:reqLen]))
-    fmt.Println(string(buff[:reqLen]))
     conn.Close()
 }
 
@@ -48,10 +47,9 @@ func WriteToSerial(message string) {
         return
     }
     defer ser.Close()
-    bytes, err := ser.Write([]byte(message))
+    _, err = ser.Write([]byte(message))
     if err != nil {
         println("Error writing to serial connection. ", err.Error())
         return
     }
-    println(string(bytes) + "bytes written")
 }
