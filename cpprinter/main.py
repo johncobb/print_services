@@ -2,6 +2,7 @@ import sys, getopt
 import threading
 import time
 import urllib2
+import signal
 from datetime import datetime
 from cpdefs import CpDefs
 from cpdefs import HttpCodes
@@ -15,7 +16,11 @@ except ImportError as e:
     print 'Check documentation for deployment instructions.'
     exit(0)
 
+def alarmHandler(signum, frame):
+    raise AssertionError("SIGALRM raised")
+
 def main(argv):
+    signal.signal(signal.SIGALRM, alarmHandler)
     logger = CpLogger()
     logger.status('**********SYSTEM BOOT**********')
 
@@ -83,7 +88,9 @@ class HttpListener:
         """
         request = self.generateHttpRequest(self.apiUrl)
         try:
+            signal.alarm(8)
             httpResponse = urllib2.urlopen(request)
+            signal.alarm(0)
 
             if httpResponse.getcode() == HttpCodes.SUCCESS:
                 printerCommand = self.decodeHttpResponse(httpResponse)
@@ -102,6 +109,10 @@ class HttpListener:
         except IOError as e:
             errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e)
             self.logger.error(errorString)
+        except AssertionError:
+            logger.warning("URLOpen halted. Retrying connection.")
+
+        signal.alarm(0)
 
         return False
 
