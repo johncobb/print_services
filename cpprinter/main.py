@@ -40,13 +40,12 @@ def pollLoop(httpListeners, logger):
     while True:
         for listener in httpListeners:
             try:
-                signal.alarm(15)
+                signal.alarm(30)
                 while listener.poll():
                     pass  # no action besides what poll does
                 signal.alarm(0)
             except TimeoutError:
                 logger.warning("URLOpen halted. Retrying connection.")
-                signal.alarm(0)
 
         logger.purgeOldLogs()
         time.sleep(CpDefs.MESSAGE_CHECK_DELAY_S)
