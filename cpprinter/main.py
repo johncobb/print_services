@@ -16,8 +16,11 @@ except ImportError as e:
     print 'Check documentation for deployment instructions.'
     exit(0)
 
+class TimeoutError(Exception):
+    pass
+
 def alarmHandler(signum, frame):
-    raise AssertionError("SIGALRM raised")
+    raise TimeoutError("SIGALRM raised")
 
 def main(argv):
     signal.signal(signal.SIGALRM, alarmHandler)
@@ -36,8 +39,14 @@ def main(argv):
 def pollLoop(httpListeners, logger):
     while True:
         for listener in httpListeners:
-            while listener.poll():
-                pass  # no action besides what poll does
+            try:
+                signal.alarm(15)
+                while listener.poll():
+                    pass  # no action besides what poll does
+                signal.alarm(0)
+            except TimeoutError:
+                logger.warning("URLOpen halted. Retrying connection.")
+                signal.alarm(0)
 
         logger.purgeOldLogs()
         time.sleep(CpDefs.MESSAGE_CHECK_DELAY_S)
@@ -88,9 +97,7 @@ class HttpListener:
         """
         request = self.generateHttpRequest(self.apiUrl)
         try:
-            signal.alarm(8)
             httpResponse = urllib2.urlopen(request)
-            signal.alarm(0)
 
             if httpResponse.getcode() == HttpCodes.SUCCESS:
                 printerCommand = self.decodeHttpResponse(httpResponse)
@@ -109,10 +116,7 @@ class HttpListener:
         except IOError as e:
             errorString = 'Could not access: ' + self.apiUrl + '\n' + str(e)
             self.logger.error(errorString)
-        except AssertionError:
-            logger.warning("URLOpen halted. Retrying connection.")
 
-        signal.alarm(0)
 
         return False
 
