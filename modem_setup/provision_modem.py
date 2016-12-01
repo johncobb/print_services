@@ -5,8 +5,9 @@ import re
 import urllib2 as url
 import platform # platform.system()
 
-NEW_PASSWORD_HASH = '""'
-PRINTER_ID_API_URL = ''
+
+NEW_PASSWORD_HASH = '"$1$c3fc4e66$nCPfKfgOiibpOPs/8xan0lygoeR7XeSpEJtlW/R9NDU="'
+PRINTER_ID_API_URL = 'http://api2.engenx.com:5000/endpoint/evan_regip/123'
 
 def getCommands():
     """List of commands to be executed on the modem for initial setup.
@@ -20,7 +21,7 @@ def getCommands():
 
         'set /config/dhcpd/reserve [{"enabled":true, "ip6_address": null, "hostname":"raspberrypi", "ip_address":"192.168.0.2", "mac":"' + getPiMacAddress() + '", "duid":"01:b8:27:eb:fb:ca:79"}]',
 
-        'set /config/firewall/portfwd [{"enabled": true, "ip_address": "192.168.0.2", "lan_port_offt": 22, "name": "PiPrinter", "protocol": "both", "wan_port_end": 2022, "wan_port_start":2022},{"enabled": true, "ip_address": "192.168.0.2", "lan_port_offt": 5555, "name": "PiPrinter", "protocol": "both", "wan_port_end": 5555, "wan_port_start":5555}]',
+        'set /config/firewall/portfwd [{"enabled": true, "ip_address": "192.168.0.2", "lan_port_offt": 22, "name": "PiPrinter", "protocol": "both", "wan_port_end": 2022, "wan_port_start":2022}]',
 
         'set /config/firewall/remote_admin {"enabled":true, "port":8080, "restrict_ips":false, "secure_only":false, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}',
 
