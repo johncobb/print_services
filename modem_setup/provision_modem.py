@@ -40,8 +40,6 @@ def main():
     blockUntilModemFound()
     sshpassCommand = getSshpassCommand()
 
-    ip = getOutwardIp()
-
     for command in commands:
         print('Calling: ' + " ".join(sshpassCommand + [command]))
         if subprocess.call(sshpassCommand + [command]) != 0:
@@ -52,8 +50,6 @@ def main():
     time.sleep(60)
     setPassword()
 
-    ids = requestPrinterIds(ip)
-    subprocess.call(['../setup'] + ids)
     os.system('sudo shutdown -r now')
 
 def setPassword():
@@ -103,29 +99,6 @@ def getSshpassCommand():
 def getPiMacAddress():
     with open('/sys/class/net/eth0/address', 'r') as macFile:
         return macFile.read().replace('\n', '')
-
-def getOutwardIp():
-    blockUntilModemFound()
-    while True:
-	result = os.popen(" ".join(getSshpassCommand()) + ' "get /status/wan/ipinfo/ip_address"').readlines()
-        try:
-	    result = result[0]
-        except IndexError as e:
-            print('Could not retrieve IP. Try again.')
-            time.sleep(1)
-            continue
-	foundIp = re.search('".*"', result)
-	if foundIp:
-	    return foundIp.group(0)
-	time.sleep(5)
-
-def requestPrinterIds(outwardIp):
-    while True:
-        try:
-            resp = url.urlopen(url.Request(PRINTER_ID_API_URL))
-            return resp.readlines()
-        except url.URLError as e:
-            print('Printer ID Request Failed.')
 
 if __name__ == '__main__':
     main()
