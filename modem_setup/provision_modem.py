@@ -46,24 +46,34 @@ def main():
     sshpassCommand = getSshpassCommand()
 
     for command in commands:
-        print('Calling: ' + " ".join(sshpassCommand + [command]))
-        if subprocess.call(sshpassCommand + [command]) != 0:
-            time.sleep(2)
+        sshCommandToModem([command])
 
-    subprocess.call(sshpassCommand + ['reboot']) # send reboot cmd to modem
+    sshCommandToModem(['reboot'])
     print('Sleep for 60 seconds.')
     time.sleep(60)
     setPassword()
 
     os.system('sudo shutdown -r now')
 
+def sshCommandToModem(cmd):
+    """Repeatedly calls cmd on the modem until success.
+    Returns the ssh commands return code.
+
+    cmd -- [string] -- List of arguments to the sshpass command.
+                       This is normally a list of length 1.    
+    """
+    sshPassCommand = getSshpassCommand()
+    print('Calling: ' + " ".join(sshPassCommand + cmd))
+    subprocess.call(sshPassCommand + cmd)
+
+    
 def setPassword():
     """Attempts to reset the password until successful. The modem is
     rebooting so this may take several attempts.
     """
     blockUntilModemFound()
     passwordCommand = 'set /config/system/users/0/password ' + NEW_PASSWORD_HASH
-    subprocess.call(getSshpassCommand() + [passwordCommand])
+    sshCommandToModem([passwordCommand])
 
 def blockUntilModemFound():
     """wget -q --spider google.com will return 0 whenever there is
