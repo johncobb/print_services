@@ -4,10 +4,15 @@ import time
 import re
 import urllib2 as url
 import platform # platform.system()
+import sys
 
-
-NEW_PASSWORD_HASH = '"$1$c3fc4e66$nCPfKfgOiibpOPs/8xan0lygoeR7XeSpEJtlW/R9NDU="'
-PRINTER_ID_API_URL = 'http://api2.engenx.com:5000/endpoint/evan_regip/123'
+NEW_PASSWORD_HASH = ''
+try:
+    NEW_PASSWORD_HASH = os.environ['NEW_PASSWORD_HASH']
+except KeyError as e:
+    print '[ERROR]: Environment not set up correctly.'
+    print '         Expecting NEW_PASSWORD_HASH var from shell.'
+    sys.exit(1)
 
 def getCommands():
     """List of commands to be executed on the modem for initial setup.
