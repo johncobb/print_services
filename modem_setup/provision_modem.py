@@ -5,6 +5,7 @@ import re
 import urllib2 as url
 import platform # platform.system()
 import sys
+import json
 
 NEW_PASSWORD_HASH = ''
 try:
@@ -54,6 +55,43 @@ def main():
     setPassword()
 
     os.system('sudo shutdown -r now')
+
+def setModemVariable(path, value):
+    """The modem's file system is a JSON key-value store. It
+    is accessed with the "get" command and modified with the
+    "set" command. This sets the value of path on the modem
+    value.
+
+    path -- string -- absolute path of file on modem file system
+    value -- string -- JSON string representing the value that
+                       path will be set to. Keys are folders and
+                       values are their contents.
+    """
+    sshPassCommand = getSshpassCommand()
+    try:
+        while True:
+            try:
+                if canonicalize(getModemVariable(path)) == canonicalize(value):
+                    return
+                subprocess.call(sshPassCommand + ['set ' + path + ' ' + value])
+            except ValueError: # Guards against invalid JSON strings
+                pass
+    except:
+        pass
+
+def getModemVariable(path):
+    """The 'get' command is used to get values from the modem's file system.
+    Unfortunately, the modem's SSH implementation is hot garbage, so it
+    always returns 255 no matter what. So here we make the call and catch
+    the output error and return whatever output we get.
+    """
+    output = ''
+    try:
+        output = subprocess.check_output(getSshpassCommand() + ['get ' + path])
+    except subprocess.CalledProcessError as e:
+        output = e.output
+    return output
+        
 
 def sshCommandToModem(cmd):
     """Repeatedly calls cmd on the modem until success.
@@ -114,6 +152,12 @@ def getSshpassCommand():
 def getPiMacAddress():
     with open('/sys/class/net/eth0/address', 'r') as macFile:
         return macFile.read().replace('\n', '')
+
+def canonicalizeJSON(jsonStr):
+    """Reduces jsonStr to canonical form by loading it as python
+    object then parsing it back to a string from the returned object.
+    """
+    return json.dumps(json.loads(jsonStr))
 
 if __name__ == '__main__':
     main()
