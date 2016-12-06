@@ -21,37 +21,34 @@ def getCommands():
     session on a CradlePoint LBR650LPE-VZ modem.
     """
     return [
-        'set /config/system/timezone "+6"',
+        ('/config/system/timezone', '"+6"'),
 
-        'set /config/firewall/macfilter/enabled true',
+        ('/config/firewall/macfilter/enabled', 'true'),
 
-        'set /config/dhcpd/reserve [{"enabled":true, "ip6_address": null, "hostname":"raspberrypi", "ip_address":"192.168.0.2", "mac":"' + getPiMacAddress() + '", "duid":"01:b8:27:eb:fb:ca:79"}]',
+        ('/config/dhcpd/reserve', '[{"enabled":true, "ip6_address": null, "hostname":"raspberrypi", "ip_address":"192.168.0.2", "mac":"' + getPiMacAddress() + '", "duid":"01:b8:27:eb:fb:ca:79"}]'),
 
-        'set /config/firewall/portfwd [{"enabled": true, "ip_address": "192.168.0.2", "lan_port_offt": 22, "name": "PiPrinter", "protocol": "both", "wan_port_end": 2022, "wan_port_start":2022}]',
+        ('/config/firewall/portfwd', '[{"enabled": true, "ip_address": "192.168.0.2", "lan_port_offt": 22, "name": "PiPrinter", "protocol": "both", "wan_port_end": 2022, "wan_port_start":2022}]'),
 
-        'set /config/firewall/remote_admin {"enabled":true, "port":8080, "restrict_ips":false, "secure_only":false, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}',
+        ('/config/firewall/remote_admin', '{"enabled":true, "port":8080, "restrict_ips":false, "secure_only":false, "secure_port":8443, "usb_logging":false, "allowed_ips":[]}'),
 
-        'set /config/firewall/ssh_admin {"enabled": true, "port": 22, "weak_ciphers": false, "remote_access": true}',
+        ('/config/firewall/ssh_admin', '{"enabled": true, "port": 22, "weak_ciphers": false, "remote_access": true}'),
 
-        'set /config/system/ui_activated true',
+        ('/config/system/ui_activated', 'true'),
 
-        'set /config/firewall/macfilter {"enabled": true, "macs": [{"addr": "' + getPiMacAddress() + '"}], "whitelist": true}'
+        ('/config/firewall/macfilter', '{"enabled": true, "macs": [{"addr": "' + getPiMacAddress() + '"}], "whitelist": true}')
     ]
 
 def main():
-    if NEW_PASSWORD_HASH == '""':
-        print('[ERROR]: Must initialize new password hash. Exiting.')
-        return
     commands = getCommands()
     blockUntilModemFound()
     sshpassCommand = getSshpassCommand()
 
     for command in commands:
-        sshCommandToModem([command])
+        setModemVariable(command[0], command[1])
 
-    sshCommandToModem(['reboot'])
+    subprocess.call(getSshpassCommand() + ['reboot'])
     print('Sleep for 60 seconds.')
-    time.sleep(60)
+#    time.sleep(60)
     setPassword()
 
     os.system('sudo shutdown -r now')
@@ -68,16 +65,16 @@ def setModemVariable(path, value):
                        values are their contents.
     """
     sshPassCommand = getSshpassCommand()
-    try:
-        while True:
-            try:
-                if canonicalize(getModemVariable(path)) == canonicalize(value):
-                    return
-                subprocess.call(sshPassCommand + ['set ' + path + ' ' + value])
-            except ValueError: # Guards against invalid JSON strings
-                pass
-    except:
-        pass
+    while True:
+        try:
+            if canonicalizeJSON(getModemVariable(path)) == canonicalizeJSON(value):
+                return
+            subprocess.call(sshPassCommand + ['set ' + path + ' ' + value])
+        except ValueError as e: # Guards against invalid JSON strings
+            print str(e)
+
+        except subprocess.CalledProcessError as e:
+            print str(e)
 
 def getModemVariable(path):
     """The 'get' command is used to get values from the modem's file system.
@@ -90,28 +87,17 @@ def getModemVariable(path):
         output = subprocess.check_output(getSshpassCommand() + ['get ' + path])
     except subprocess.CalledProcessError as e:
         output = e.output
-    return output
-        
 
-def sshCommandToModem(cmd):
-    """Repeatedly calls cmd on the modem until success.
-    Returns the ssh commands return code.
-
-    cmd -- [string] -- List of arguments to the sshpass command.
-                       This is normally a list of length 1.    
-    """
-    sshPassCommand = getSshpassCommand()
-    print('Calling: ' + " ".join(sshPassCommand + cmd))
-    subprocess.call(sshPassCommand + cmd)
-
+    # The modem sends a leading null byte because it sucks
+    return output.replace(b'\0', '')         
     
 def setPassword():
     """Attempts to reset the password until successful. The modem is
     rebooting so this may take several attempts.
     """
     blockUntilModemFound()
-    passwordCommand = 'set /config/system/users/0/password ' + NEW_PASSWORD_HASH
-    sshCommandToModem([passwordCommand])
+    passwordCommand = 'set /config/system/users/0/password ' + '"' + NEW_PASSWORD_HASH + '"'
+    subprocess.call(getSshpassCommand() + [passwordCommand])
 
 def blockUntilModemFound():
     """wget -q --spider google.com will return 0 whenever there is
