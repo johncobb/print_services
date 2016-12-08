@@ -64,12 +64,13 @@ def setModemVariable(path, value):
                        path will be set to. Keys are folders and
                        values are their contents.
     """
-    sshPassCommand = getSshpassCommand()
+    setCommand = getSshpassCommand() + ['set ' + path + ' ' + value]
+    print 'Calling: ', setCommand
     while True:
         try:
             if canonicalizeJSON(getModemVariable(path)) == canonicalizeJSON(value):
                 return
-            subprocess.call(sshPassCommand + ['set ' + path + ' ' + value])
+            subprocess.call(setCommand)
         except ValueError as e: # Guards against invalid JSON strings
             print str(e)
 
@@ -83,14 +84,16 @@ def getModemVariable(path):
     the output error and return whatever output we get.
     """
     output = ''
+    getCommand = getSshpassCommand() + ['get ' + path]
+    print 'Calling: ', getCommand
     try:
-        output = subprocess.check_output(getSshpassCommand() + ['get ' + path])
+        output = subprocess.check_output(getCommand)
     except subprocess.CalledProcessError as e:
         output = e.output
 
     # The modem sends a leading null byte because it sucks
     return output.replace(b'\0', '')         
-    
+
 def setPassword():
     """Attempts to reset the password until successful. The modem is
     rebooting so this may take several attempts.
@@ -107,7 +110,6 @@ def blockUntilModemFound():
     print('Searching for modem...')
     while(subprocess.call('wget -q --spider http://google.com'.split()) != 0):
         pass
-    print('Found modem.')
 
 def arp():
     """The arp command finds devices connected to ethernet to the raspberry
