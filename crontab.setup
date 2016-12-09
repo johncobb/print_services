@@ -1,1 +1,1 @@
-@reboot /usr/bin/python /home/pi/print_services/modem_setup/provision_modem.py >> /home/pi/provisioning.log 2>&1
+@reboot . /home/pi/print_services/crontab.sh

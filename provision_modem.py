@@ -7,6 +7,9 @@ import platform # platform.system()
 import sys
 import json
 
+# The return code from the ssh session if the password is invalid
+PERMISSION_DENIED_ERRCODE = 5
+
 NEW_PASSWORD_HASH = ''
 try:
     NEW_PASSWORD_HASH = os.environ['NEW_PASSWORD_HASH']
@@ -41,17 +44,16 @@ def getCommands():
 def main():
     commands = getCommands()
     blockUntilModemFound()
-    sshpassCommand = getSshpassCommand()
 
     for command in commands:
         setModemVariable(command[0], command[1])
 
     subprocess.call(getSshpassCommand() + ['reboot'])
     print('Sleep for 60 seconds.')
-#    time.sleep(60)
+    time.sleep(60)
     setPassword()
 
-    os.system('sudo shutdown -r now')
+    os.system('shutdown -r now')
 
 def setModemVariable(path, value):
     """The modem's file system is a JSON key-value store. It
@@ -71,11 +73,16 @@ def setModemVariable(path, value):
             if canonicalizeJSON(getModemVariable(path)) == canonicalizeJSON(value):
                 return
             subprocess.call(setCommand)
+            return
         except ValueError as e: # Guards against invalid JSON strings
             print str(e)
 
         except subprocess.CalledProcessError as e:
+            if e.returncode == PERMISSION_DENIED_ERRCODE:
+                print('Modem already configured. Exiting.')
+                sys.exit(0)
             print str(e)
+
 
 def getModemVariable(path):
     """The 'get' command is used to get values from the modem's file system.
@@ -86,10 +93,13 @@ def getModemVariable(path):
     output = ''
     getCommand = getSshpassCommand() + ['get ' + path]
     print 'Calling: ', getCommand
+
     try:
         output = subprocess.check_output(getCommand)
     except subprocess.CalledProcessError as e:
-        output = e.output
+        if e.returncode == PERMISSION_DENIED_ERRCODE:
+            raise e
+        output = ''
 
     # The modem sends a leading null byte because it sucks
     return output.replace(b'\0', '')         
@@ -145,6 +155,8 @@ def canonicalizeJSON(jsonStr):
     """Reduces jsonStr to canonical form by loading it as python
     object then parsing it back to a string from the returned object.
     """
+    if jsonStr == '':
+        return ''
     return json.dumps(json.loads(jsonStr))
 
 if __name__ == '__main__':
